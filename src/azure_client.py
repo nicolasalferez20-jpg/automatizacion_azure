@@ -17,7 +17,13 @@ def get_work_item(work_item_id):
         auth=HTTPBasicAuth("", PAT)
     )
 
+    print("AZURE URL:", url)
+    print("AZURE STATUS:", response.status_code)
+    print("AZURE RESPONSE:", response.text[:500])
+
+
     response.raise_for_status()
+
 
     return response.json()
 
@@ -46,19 +52,3 @@ def get_child_tasks(work_item):
 
     return tasks
 
-def get_comments(work_item_id):
-
-    url = (
-        f"https://dev.azure.com/{ORG}/{PROJECT}"
-        f"/_apis/wit/workItems/{work_item_id}"
-        f"/comments?api-version=7.1-preview.4"
-    )
-
-    response = requests.get(
-        url,
-        auth=HTTPBasicAuth("", PAT)
-    )
-
-    response.raise_for_status()
-
-    return response.json()
