@@ -1,7 +1,7 @@
 import json
 import google.generativeai as genai
 
-from config import API_KEY
+from src.config import API_KEY
 
 genai.configure(
     api_key=API_KEY
@@ -14,31 +14,28 @@ model = genai.GenerativeModel(
 def analizar_seguridad(texto_hu):
 
     prompt = f"""
-Analiza la siguiente Historia de Usuario.
+    Analiza la siguiente Historia de Usuario.
+    
+    Debes determinar si aplican estos criterios de seguridad:
+    1. Mecanismo para validar proceso de Autenticación y Autorización
+    2. Cifrado de datos sensibles
+    3. Mecanismo de comprobación de integridad de los datos
+    4. Inclusión de logs de trazabilidad
 
-Debes determinar si aplican estos criterios de seguridad:
+    Responde ÚNICAMENTE con JSON válido.
 
-1. Mecanismo para validar proceso de Autenticación y Autorización
-2. Cifrado de datos sensibles
-3. Mecanismo de comprobación de integridad de los datos
-4. Inclusión de logs de trazabilidad
+    Formato:
 
-Responde ÚNICAMENTE con JSON válido.
-
-Formato:
-
-{{
-  "autenticacion": "Aplica o No aplica",
-  "cifrado": "Aplica o No aplica",
-  "integridad": "Aplica o No aplica",
-  "logs": "Aplica o No aplica"
-}}
-
-Historia de Usuario:
-
-{texto_hu}
-"""
-
+    {{
+        "autenticacion": "Aplica o No aplica",
+        "cifrado": "Aplica o No aplica",
+        "integridad": "Aplica o No aplica",
+        "logs": "Aplica o No aplica"
+        }}
+        Historia de Usuario:
+        
+        {texto_hu}
+        """       
     try:
 
         response = model.generate_content(

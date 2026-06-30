@@ -1,11 +1,11 @@
-from azure_client import (
+from src.azure_client import (
     get_work_item,
     get_child_tasks,
     get_comments
 )
 
-from html_utils import clean_html
-from pdf_generator import generate_pdf
+from src.html_utils import clean_html
+from src.pdf_generator import generate_pdf
 
 import sys
 

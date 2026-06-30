@@ -1,7 +1,7 @@
 import requests
 from requests.auth import HTTPBasicAuth
 
-from config import PAT, ORG, PROJECT
+from src.config import PAT, ORG, PROJECT
 
 
 def get_work_item(work_item_id):

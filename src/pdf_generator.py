@@ -12,8 +12,8 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import cm
 from bs4 import BeautifulSoup
-from html_utils import clean_html
-from security_analyzer import analizar_seguridad
+from src.html_utils import clean_html
+from src.security_analyzer import analizar_seguridad
 from datetime import datetime
 
 COLOR_GSE = colors.HexColor("#18E0C4")
@@ -242,21 +242,22 @@ def dibujar_encabezado(canvas, doc):
 
 def generate_pdf(
     work_item,
-    tasks,
-    comments_by_task,
-    output_file
-):
+    tasks
+    ):
+    output_file = f"output/HU_{work_item['id']}.pdf"
+
     doc = SimpleDocTemplate(
-     output_file,
-     rightMargin=20,
-     leftMargin=20,
-     topMargin=120,
-     bottomMargin=20)
-    
+        output_file,
+        rightMargin=20,
+        leftMargin=20,
+        topMargin=120,
+        bottomMargin=20
+    )
+
     styles = getSampleStyleSheet()
-
+    
     elementos = []
-
+    
     # ==================================================
     # FECHA Y PROYECTO
     # ==================================================
@@ -933,6 +934,7 @@ def generate_pdf(
     doc.build(elementos,
     onFirstPage=dibujar_encabezado,
     onLaterPages=dibujar_encabezado
-)
-
+    )
     print(f"\nPDF generado correctamente: {output_file}")
+
+    return output_file
