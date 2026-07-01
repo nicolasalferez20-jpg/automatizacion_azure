@@ -54,13 +54,14 @@ def subir_pdf_drive(
 
     service = build(
 
-    "drive",
+        "drive",
 
-    "v3",
+        "v3",
 
-    credentials=credentials,
+        credentials=credentials,
 
-    cache_discovery=False
+        cache_discovery=False
+
     )
 
 
@@ -91,13 +92,12 @@ def subir_pdf_drive(
 
     archivo = service.files().create(
 
-    body=metadata,
+        body=metadata,
 
-    media_body=media,
+        media_body=media,
 
-    fields="id",
+        fields="id"
 
-    supportsAllDrives=True
     ).execute()
 
 
