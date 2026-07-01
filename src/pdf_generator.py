@@ -15,6 +15,7 @@ from bs4 import BeautifulSoup
 from src.html_utils import clean_html
 from src.security_analyzer import analizar_seguridad
 from datetime import datetime
+from pathlib import Path
 
 COLOR_GSE = colors.HexColor("#18E0C4")
 
@@ -244,7 +245,14 @@ def generate_pdf(
     work_item,
     tasks
     ):
-    output_file = f"output/HU_{work_item['id']}.pdf"
+    output_folder = Path("output")
+    output_folder.mkdir(
+        exist_ok=True)
+    
+    output_file = (
+        output_folder /
+        f"HU_{work_item['id']}.pdf"
+        )
 
     doc = SimpleDocTemplate(
         output_file,

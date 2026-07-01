@@ -23,17 +23,10 @@ def get_work_item(work_item_id):
         url,
         auth=HTTPBasicAuth("", PAT)
     )
-
-
-    # Logs para Render
-    print("AZURE URL:", url)
-    print("AZURE STATUS:", response.status_code)
-    print("PAT EXISTE:", bool(PAT))
-    print("AZURE RESPONSE:", response.text[:500])
-
+    
 
     response.raise_for_status()
-
+    
 
     return response.json()
 
@@ -55,8 +48,7 @@ def get_child_tasks(work_item):
                 f"{url}?api-version=7.1",
                 auth=HTTPBasicAuth("", PAT)
             )
-
-            print("TASK STATUS:", response.status_code)
+            
 
             response.raise_for_status()
 

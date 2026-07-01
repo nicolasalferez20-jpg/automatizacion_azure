@@ -8,9 +8,10 @@ from src.azure_client import (
 
 from src.pdf_generator import generate_pdf
 from fastapi.middleware.cors import CORSMiddleware
-
+from pathlib import Path
 
 app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -21,6 +22,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# carpeta donde se generan los PDFs
+OUTPUT_FOLDER = Path("output")
+
 # Endpoint de prueba
 @app.get("/")
 def home():
@@ -35,16 +40,38 @@ def crear_pdf(id_hu:int):
 
     work_item = get_work_item(id_hu)
     tareas = get_child_tasks(work_item)
-
-
+    
     ruta_pdf = generate_pdf(
         work_item,
         tareas
     )
-
-
+    
     return FileResponse(
         ruta_pdf,
         media_type="application/pdf",
         filename=f"HU_{id_hu}.pdf"
     )
+
+# NUEVO ENDPOINT HISTORIAL
+@app.get("/historial")
+def obtener_historial():
+
+    documentos = []
+
+    if not OUTPUT_FOLDER.exists():
+
+        return documentos
+
+    for archivo in OUTPUT_FOLDER.glob("*.pdf"):
+
+        documentos.append({
+
+            "id": archivo.stem,
+
+            "nombre": archivo.name,
+
+            "fecha": archivo.stat().st_mtime
+
+        })
+
+    return documentos
