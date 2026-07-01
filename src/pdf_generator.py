@@ -244,15 +244,19 @@ def dibujar_encabezado(canvas, doc):
 def generate_pdf(
     work_item,
     tasks
-    ):
+):
+
     output_folder = Path("output")
+
     output_folder.mkdir(
-        exist_ok=True)
-    
-    output_file = (
+        exist_ok=True
+    )
+
+
+    output_file = str(
         output_folder /
         f"HU_{work_item['id']}.pdf"
-        )
+    )
 
     doc = SimpleDocTemplate(
         output_file,
