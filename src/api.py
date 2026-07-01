@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
+
 
 from src.azure_client import (
     get_work_item,
@@ -7,8 +7,10 @@ from src.azure_client import (
 )
 
 from src.pdf_generator import generate_pdf
+from src.google_drive import subir_pdf_drive
 from fastapi.middleware.cors import CORSMiddleware
-from pathlib import Path
+
+
 
 app = FastAPI()
 
@@ -18,18 +20,13 @@ app.add_middleware(
         "http://localhost:5173",
         "https://frontend-azure-inky.vercel.app"
     ],
+
     allow_credentials=True,
+
     allow_methods=["*"],
+
     allow_headers=["*"],
-)
-
-
-# Carpeta donde se guardan los PDFs
-OUTPUT_FOLDER = Path("output")
-
-
-# Endpoint prueba
-
+    )
 @app.get("/")
 def home():
 
@@ -38,58 +35,39 @@ def home():
         "mensaje": "API generadora de PDFs funcionando"
     }
 
-# Generar PDF y guardarlo en output
+
 @app.get("/generar-pdf/{id_hu}")
 def crear_pdf(id_hu:int):
 
+    # 1. Obtener HU desde Azure DevOps
     work_item = get_work_item(id_hu)
 
+    # 2. Obtener tareas relacionadas
     tareas = get_child_tasks(
         work_item
     )
+
+    # 3. Crear PDF localmente
     ruta_pdf = generate_pdf(
         work_item,
         tareas
+    )
+    # 4. Subir PDF a Google Drive
+    id_drive = subir_pdf_drive(
+        ruta_pdf,
+        f"HU_{id_hu}.pdf"
 
     )
     return {
 
-        "mensaje": "PDF generado correctamente",
 
-        "archivo": ruta_pdf
+        "mensaje":
+        "PDF generado correctamente y guardado en Drive",
+
+        "archivo":
+        f"HU_{id_hu}.pdf",
+
+        "drive_id":
+        id_drive
 
     }
-
-# Historial de PDFs generados
-
-@app.get("/historial")
-def obtener_historial():
-
-    documentos = []
-
-    if not OUTPUT_FOLDER.exists():
-
-        return documentos
-
-    for archivo in OUTPUT_FOLDER.glob("*.pdf"):
-
-        documentos.append({
-
-            "id": archivo.stem,
-
-            "nombre": archivo.name,
-
-            "fecha": archivo.stat().st_mtime
-
-        })
-
-    return documentos
-# Abrir PDF desde historial
-@app.get("/pdf/{nombre}")
-def ver_pdf(nombre:str):
-
-    ruta = OUTPUT_FOLDER / nombre
-    return FileResponse(
-        ruta,
-        media_type="application/pdf"
-    )
