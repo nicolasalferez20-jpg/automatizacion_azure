@@ -23,10 +23,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# carpeta donde se generan los PDFs
+
+# Carpeta donde se guardan los PDFs
 OUTPUT_FOLDER = Path("output")
 
-# Endpoint de prueba
+
+# Endpoint prueba
+
 @app.get("/")
 def home():
 
@@ -35,24 +38,30 @@ def home():
         "mensaje": "API generadora de PDFs funcionando"
     }
 
+# Generar PDF y guardarlo en output
 @app.get("/generar-pdf/{id_hu}")
 def crear_pdf(id_hu:int):
 
     work_item = get_work_item(id_hu)
-    tareas = get_child_tasks(work_item)
-    
+
+    tareas = get_child_tasks(
+        work_item
+    )
     ruta_pdf = generate_pdf(
         work_item,
         tareas
-    )
-    
-    return FileResponse(
-        ruta_pdf,
-        media_type="application/pdf",
-        filename=f"HU_{id_hu}.pdf"
-    )
 
-# NUEVO ENDPOINT HISTORIAL
+    )
+    return {
+
+        "mensaje": "PDF generado correctamente",
+
+        "archivo": ruta_pdf
+
+    }
+
+# Historial de PDFs generados
+
 @app.get("/historial")
 def obtener_historial():
 
@@ -75,3 +84,12 @@ def obtener_historial():
         })
 
     return documentos
+# Abrir PDF desde historial
+@app.get("/pdf/{nombre}")
+def ver_pdf(nombre:str):
+
+    ruta = OUTPUT_FOLDER / nombre
+    return FileResponse(
+        ruta,
+        media_type="application/pdf"
+    )
