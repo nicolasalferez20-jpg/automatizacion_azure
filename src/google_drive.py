@@ -1,3 +1,6 @@
+import os
+import json
+
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
@@ -9,11 +12,8 @@ SCOPES = [
 ]
 
 
-CREDENTIALS_FILE = "credentials.json"
-
-
-
 FOLDER_ID = "1NrOes6hnpqvcZ6EY3u-fWGgl_nOyAo-U"
+
 
 
 
@@ -23,9 +23,28 @@ def subir_pdf_drive(
 ):
 
 
-    credentials = service_account.Credentials.from_service_account_file(
+    credentials_json = os.getenv(
+        "GOOGLE_CREDENTIALS"
+    )
 
-        CREDENTIALS_FILE,
+
+    if not credentials_json:
+
+        raise Exception(
+            "No existe GOOGLE_CREDENTIALS en Render"
+        )
+
+
+
+    info = json.loads(
+        credentials_json
+    )
+
+
+
+    credentials = service_account.Credentials.from_service_account_info(
+
+        info,
 
         scopes=SCOPES
 
