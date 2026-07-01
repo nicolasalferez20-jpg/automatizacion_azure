@@ -16,7 +16,6 @@ FOLDER_ID = "1NrOes6hnpqvcZ6EY3u-fWGgl_nOyAo-U"
 
 
 
-
 def subir_pdf_drive(
     ruta_pdf,
     nombre_archivo
@@ -26,14 +25,6 @@ def subir_pdf_drive(
     credentials_json = os.getenv(
         "GOOGLE_CREDENTIALS"
     )
-
-
-    if not credentials_json:
-
-        raise Exception(
-            "No existe GOOGLE_CREDENTIALS en Render"
-        )
-
 
 
     info = json.loads(
@@ -53,15 +44,9 @@ def subir_pdf_drive(
 
 
     service = build(
-
         "drive",
-
         "v3",
-
-        credentials=credentials,
-
-        cache_discovery=False
-
+        credentials=credentials
     )
 
 
@@ -71,12 +56,36 @@ def subir_pdf_drive(
         "name": nombre_archivo,
 
         "parents":[
-
             FOLDER_ID
-
         ]
 
     }
+
+
+
+    media = MediaFileUpload(
+
+        ruta_pdf,
+
+        mimetype="application/pdf"
+
+    )
+
+
+
+    archivo = service.files().create(
+
+        body=metadata,
+
+        media_body=media,
+
+        fields="id"
+
+    ).execute()
+
+
+
+    return archivo["id"]
 
 
 
