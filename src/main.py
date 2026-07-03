@@ -1,7 +1,6 @@
 from src.azure_client import (
     get_work_item,
-    get_child_tasks,
-    get_comments
+    get_total_user_stories_by_sprint
 )
 
 from src.html_utils import clean_html
@@ -14,6 +13,7 @@ try:
     if len(sys.argv) < 2:
         print("Uso: python src/main.py <ID_HU>")
         sys.exit(1)
+
     # Obtener ID de la HU desde la línea de comandos
     work_item_id = int(sys.argv[1])
 
@@ -34,7 +34,7 @@ try:
 
     print("\nCOMO:")
     print(clean_html(work_item["fields"].get("Custom.Como", "")))
-    
+
     print("\nQUIERO:")
     print(clean_html(work_item["fields"].get("System.Description", "")))
 
@@ -48,64 +48,26 @@ try:
     print(clean_html(work_item["fields"].get("Custom.Requerimientos", "")))
 
     print("\nCRITERIOS DE ACEPTACIÓN:")
-    print( clean_html(work_item["fields"].get( "Microsoft.VSTS.Common.AcceptanceCriteria", "")))
+    print(
+        clean_html(work_item["fields"].get("Microsoft.VSTS.Common.AcceptanceCriteria", "")))
 
-    # Obtener tareas hijas
-    tasks = get_child_tasks(work_item)
+    # Obtener el Sprint de la HU
+    iteration_path = work_item["fields"]["System.IterationPath"]
 
-    # Diccionario para almacenar comentarios por tarea
-    comments_by_task = {}
+    print("\nSprint:")
+    print(iteration_path)
 
-    print("\n" + "=" * 60)
-    print("TAREAS HIJAS")
-    print("=" * 60)
+    # Obtener total de HU del Sprint
+    total_hu = get_total_user_stories_by_sprint(iteration_path)
 
-    if not tasks:
-        print("No se encontraron tareas hijas")
-
-    for task in tasks:
-
-        print(f"\nID Tarea: {task['id']}")
-        print(f"Título: {task['fields']['System.Title']}")
-        print(f"Estado: {task['fields'].get('System.State', 'N/A')}")
-
-        comments = get_comments(task["id"])
-
-        comments_by_task[task["id"]] = []
-
-        print("\nCOMENTARIOS")
-
-        if comments["count"] == 0:
-
-            print("Sin comentarios")
-
-        else:
-
-            for index, comment in enumerate(
-                comments["comments"],
-                start=1
-            ):
-
-                print("\n" + "-" * 50)
-                print(f"Comentario #{index}")
-                print("-" * 50)
-
-                clean_text = clean_html(
-                    comment["text"]
-                )
-
-                comments_by_task[task["id"]].append(
-                    clean_text
-                )
-
-                print(clean_text)
+    print(f"\nTotal de Historias de Usuario del Sprint: {total_hu}")
 
     # Generar PDF
     generate_pdf(
         work_item,
-        tasks,
-        comments_by_task,
+        total_hu,
         f"output/HU_{work_item_id}.pdf"
     )
 
-except Exception as e: print(f"\nError: {e}")
+except Exception as e:
+    print(f"\nError: {e}")

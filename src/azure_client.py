@@ -8,14 +8,14 @@ from src.config import PAT, ORG, PROJECT
 
 def get_work_item(work_item_id):
 
-    # Codifica espacios y caracteres especiales del proyecto
+
     project_encoded = quote(PROJECT)
 
 
     url = (
         f"https://dev.azure.com/{ORG}/{project_encoded}"
         f"/_apis/wit/workitems/{work_item_id}"
-        f"?$expand=relations&api-version=7.1"
+        f"?api-version=7.1"
     )
 
 
@@ -26,33 +26,37 @@ def get_work_item(work_item_id):
     
 
     response.raise_for_status()
-    
+
 
     return response.json()
 
 
-def get_child_tasks(work_item):
+def get_total_user_stories_by_sprint(iteration_path):
 
-    tasks = []
+    project_encoded = quote(PROJECT)
 
-    if "relations" not in work_item:
-        return tasks
+    url = (
+        f"https://dev.azure.com/{ORG}/{project_encoded}"
+        f"/_apis/wit/wiql?api-version=7.1"
+    )
 
-    for relation in work_item["relations"]:
+    query = {
+        "query": f"""
+        SELECT [System.Id]
+        FROM WorkItems
+        WHERE
+            [System.TeamProject] = '{PROJECT}'
+            AND [System.WorkItemType] = 'User Story'
+            AND [System.IterationPath] = '{iteration_path}'
+        """
+    }
 
-        if relation["rel"] == "System.LinkTypes.Hierarchy-Forward":
+    response = requests.post(
+        url,
+        json=query,
+        auth=HTTPBasicAuth("", PAT)
+    )
 
-            url = relation["url"]
+    response.raise_for_status()
 
-            response = requests.get(
-                f"{url}?api-version=7.1",
-                auth=HTTPBasicAuth("", PAT)
-            )
-            
-
-            response.raise_for_status()
-
-            tasks.append(response.json())
-
-    return tasks
-
+    return len(response.json()["workItems"])

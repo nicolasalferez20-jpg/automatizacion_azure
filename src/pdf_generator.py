@@ -243,7 +243,7 @@ def dibujar_encabezado(canvas, doc):
 
 def generate_pdf(
     work_item,
-    tasks
+    total_hu
 ):
 
     output_folder = Path("output")
@@ -390,7 +390,7 @@ def generate_pdf(
             ],
             [
                 "Tecnico",
-                str(len(tasks))
+                str(total_hu)
             ]
         ],
         colWidths=[9 * cm, 9 * cm]
