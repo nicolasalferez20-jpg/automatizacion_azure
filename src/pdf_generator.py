@@ -243,7 +243,8 @@ def dibujar_encabezado(canvas, doc):
 
 def generate_pdf(
     work_item,
-    total_hu
+    total_hu,
+    datos_requerimiento
 ):
 
     output_folder = Path("output")
@@ -335,12 +336,17 @@ def generate_pdf(
     # SECCIÓN 1 Y 2
     # ==================================================
 
-    nombre_requerimiento = work_item["fields"].get(
-        "System.Title",
-        ""
-    )
+# Validación por si no llegó requerimiento predecesor
+    if not datos_requerimiento:
+        datos_requerimiento = {
+            "id_requerimiento": "N/A",
+            "nombre_requerimiento": "No asignado",
+            "descripcion": "No se encontró un requerimiento predecesor vinculado."
+        }
 
-    id_requerimiento = str(work_item["id"])
+    # Extraemos el nombre e ID mapeados desde la respuesta del predecesor
+    nombre_requerimiento = datos_requerimiento["nombre_requerimiento"]
+    id_requerimiento = datos_requerimiento["id_requerimiento"]
 
     tabla12 = Table(
         [
@@ -350,7 +356,7 @@ def generate_pdf(
             ],
             [
                 p(nombre_requerimiento, styles),
-                id_requerimiento
+                p(id_requerimiento, styles) # Se envuelve en p() por seguridad contra desbordes
             ]
         ],
         colWidths=[13 * cm, 5 * cm]
@@ -360,7 +366,11 @@ def generate_pdf(
         TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), COLOR_GSE),
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER")
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ])
     )
 
@@ -368,7 +378,7 @@ def generate_pdf(
     elementos.append(Spacer(1, 8))
 
     # ==================================================
-    # SECCIÓN 3
+    # SECCIÓN 3 (TABLA INDEPENDIENTE)
     # ==================================================
 
     elementos.append(
@@ -377,12 +387,8 @@ def generate_pdf(
         )
     )
 
-    descripcion = clean_html(
-        work_item["fields"].get(
-            "Custom.Contexto",
-            ""
-        )
-    )
+    # Reemplazamos 'Custom.Contexto' de la HU por la descripción real extraída del requerimiento
+    descripcion = datos_requerimiento["descripcion"]
 
     tabla3 = Table(
         [[p(descripcion, styles)]],
@@ -392,7 +398,9 @@ def generate_pdf(
     tabla3.setStyle(
         TableStyle([
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("VALIGN", (0, 0), (-1, -1), "TOP")
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("TOPPADDING", (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
         ])
     )
 

@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.azure_client import (
     get_work_item,
+    get_predecessor_data,
     get_total_user_stories_by_sprint
 )
 
@@ -40,8 +41,7 @@ def home():
 def crear_pdf(id_hu: int):
 
     try:
-
-        # 1. Obtener la Historia de Usuario
+        # 1. Obtener la Historia de Usuario (ahora incluye relations internamente)
         work_item = get_work_item(id_hu)
 
         # 2. Obtener el Sprint al que pertenece la HU
@@ -50,10 +50,15 @@ def crear_pdf(id_hu: int):
         # 3. Obtener el total de HU del Sprint
         total_hu = get_total_user_stories_by_sprint(iteration_path)
 
-        # 4. Generar el PDF
+        # === NUEVO PASO: Obtener datos del predecesor (Requerimiento) ===
+        datos_requerimiento = get_predecessor_data(work_item)
+        # ===============================================================
+
+        # 4. Generar el PDF pasándole los datos del predecesor
         ruta_pdf = generate_pdf(
             work_item,
-            total_hu
+            total_hu,
+            datos_requerimiento  # <-- Envías el diccionario con id, nombre y descripción limpia
         )
 
         # 5. Subir el PDF a Supabase
