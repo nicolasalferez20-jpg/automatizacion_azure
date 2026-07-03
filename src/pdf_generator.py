@@ -273,41 +273,62 @@ def generate_pdf(
     # ==================================================
     # FECHA Y PROYECTO
     # ==================================================
-    fecha_actual = datetime.now()
-    dia = fecha_actual.strftime("%d")
-    mes = fecha_actual.strftime("%m")
-    año = fecha_actual.strftime("%Y")
+    # Fecha de creación de la Historia de Usuario
+    fecha = work_item["fields"].get(
+    "System.CreatedDate",
+    ""
+    )
+    dia = ""
+    mes = ""
+    año = ""
+    
+    if fecha:
+        fecha_limpia = fecha[:10]   # Ejemplo: 2026-06-10
+        año, mes, dia = fecha_limpia.split("-")
         
-    fecha_proyecto = Table(
+        fecha_proyecto = Table(
+            [
+                ["FECHA", "", "", "PROYECTO"],[
+            "DIA",
+            "MES",
+            "AÑO",
+            work_item["fields"].get(
+                "System.TeamProject",
+                ""
+            )
+        ],
         [
-            ["FECHA", "", "", "PROYECTO"],
-            ["DIA", "MES", "AÑO",
-                work_item["fields"].get(
-                    "System.TeamProject",
-                    ""
-                )],
-        [dia, mes, año, ""]
+            dia,
+            mes,
+            año,
+            ""
+        ]
     ],
-        colWidths=[2 * cm, 2 * cm, 3 * cm, 11 * cm]
+    colWidths=[2 * cm, 2 * cm, 3 * cm, 11 * cm]
     )
 
     fecha_proyecto.setStyle(
-        TableStyle([
+    TableStyle([
         ("SPAN", (0, 0), (2, 0)),
         ("SPAN", (3, 1), (3, 2)),
+
         ("BACKGROUND", (0, 0), (2, 0), COLOR_GSE),
         ("BACKGROUND", (3, 0), (3, 0), COLOR_GSE),
         ("BACKGROUND", (0, 1), (2, 1), colors.lightgrey),
+
         ("GRID", (0, 0), (-1, -1), 1, colors.black),
+
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+
         ("FONTNAME", (0, 0), (-1, 1), "Helvetica-Bold"),
         ("FONTSIZE", (0, 0), (-1, -1), 10),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
-        ("TOPPADDING", (0, 0), (-1, -1), 6),
-        ])
-    )
 
+        ("TOPPADDING", (0, 0), (-1, -1), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+    ])
+    )
+    
     elementos.append(fecha_proyecto)
     elementos.append(Spacer(1, 10))
     # ==================================================
@@ -410,11 +431,17 @@ def generate_pdf(
     # ==================================================
     # SECCIÓN 6 Y 7
     # ==================================================
-
+    
     prioridad = work_item["fields"].get(
         "Microsoft.VSTS.Common.Priority",
         ""
     )
+    prioridad_texto = {
+    1: "Baja",
+    2: "Media",
+    3: "Alta",
+    4: "Alta"
+    }.get(prioridad, "N/A")
 
     tabla67 = Table(
         [
@@ -423,7 +450,7 @@ def generate_pdf(
                 "7. ID Historia"
             ],
             [
-                str(prioridad),
+                prioridad_texto,
                 str(work_item["id"])
             ]
         ],
@@ -444,11 +471,16 @@ def generate_pdf(
     # ==================================================
     # SECCIÓN 8 Y 9
     # ==================================================
-
+    
     complejidad = work_item["fields"].get(
-        "Microsoft.VSTS.Common.Risk",
-        ""
+    "Microsoft.VSTS.Common.Risk",
+    ""
     )
+    complejidad_texto = {
+    "1 - High": "Alta",
+    "2 - Medium": "Media",
+    "3 - Low": "Baja"
+    }.get(complejidad, "N/A")
 
     estimacion = work_item["fields"].get(
         "Microsoft.VSTS.Scheduling.StoryPoints",
@@ -462,7 +494,7 @@ def generate_pdf(
                 "9. Estimación"
             ],
             [
-                str(complejidad),
+                complejidad_texto,
                 str(estimacion)
             ]
         ],
@@ -854,7 +886,21 @@ def generate_pdf(
     # ==================================================
     # ELABORADO POR
     # ==================================================
-
+    fecha = work_item["fields"].get(
+        "System.CreatedDate",
+        "")
+    dia = ""
+    mes = ""
+    año = ""
+    fecha_formateada = "N/A"
+    if fecha:
+        fecha_limpia = fecha[:10]
+        
+        año, mes, dia = fecha_limpia.split("-")
+        # Formato DD/MM/AAAA
+        
+        fecha_formateada = f"{dia}/{mes}/{año}"
+        
     tabla_elaborado = Table(
         [
             [
@@ -865,7 +911,7 @@ def generate_pdf(
             ],
             [
                 "Linda Daniela Corchuelo Pachon",
-                "DD/MM/AAAA",
+                fecha_formateada,
                 "Creacion",
                 "1.0"
             ]
@@ -906,21 +952,21 @@ def generate_pdf(
                 p("Coordinador de Proyectos CMMI Nivel 1", styles),
                 "Desarrollo",
                 "",
-                "DD/MM/AAAA"
+                ""
             ],
             [
                 p("Eduin Fabian Ordonez Parra", styles),
                 p("Product Manager Specialist", styles),
                 "Desarrollo",
                 "",
-                "DD/MM/AAAA"
+                ""
             ],
             [
                 p("Carlos Alberto Rodriguez Sanchez", styles),
                 p("Líder Técnico Nivel 1", styles),
                 "Desarrollo",
                 "",
-                "DD/MM/AAAA"
+                ""
             ]
             
         ],
