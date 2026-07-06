@@ -91,13 +91,20 @@ def get_work_item_relations_data(work_item_data):
         try:
             res_rel = requests.get(url_relacionado, auth=HTTPBasicAuth("", PAT))
             res_rel.raise_for_status()
-            rel_fields = res_rel.json().get("fields", {})
-
-            # Extraemos el título de la historia de usuario relacionada
+            
+            # Guardamos todo el JSON de respuesta
+            rel_json = res_rel.json()
+            
+            # 1. Sacamos el ID directamente desde la raíz del JSON
+            id_limpio = str(rel_json.get("id", ""))
+            
+            # 2. Sacamos el título desde los fields
+            rel_fields = rel_json.get("fields", {})
             titulo_relacionado = rel_fields.get("System.Title", "").strip()
 
+            # Guardamos en el diccionario con el ID 100% limpio
             resultado["relacionado"] = {
-                "id_relacionado": url_relacionado.split("/")[-1], # Extrae el ID (ej: 30026) desde la URL
+                "id_relacionado": id_limpio, # Ej: "30026"
                 "titulo": titulo_relacionado
             }
         except Exception as e:

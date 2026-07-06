@@ -838,8 +838,11 @@ def generate_pdf(
     # ==================================================
     # SECCIÓN 16
     # ==================================================
-    elementos.append
-    (titulo_seccion("16. ¿Depende de otras historias de usuario?"))
+    elementos.append(
+        titulo_seccion(
+            "16. ¿Depende de otras historias de usuario?"
+        )
+    )
 
     dependencia = "N/A."
     # Extraemos el ID y el Título de la HU relacionada desde el nuevo nodo
