@@ -31,29 +31,29 @@ def get_work_item(work_item_id):
 
 def get_work_item_relations_data(work_item_data):
     """
-    Busca las relaciones de tipo Predecesor y Relacionado en el JSON del Work Item,
-    hace las peticiones a Azure y extrae la información limpia de ambos.
+    Busca las relaciones de tipo Predecesor y todas las de tipo Relacionado 
+    en el JSON del Work Item, hace las peticiones a Azure y extrae la información limpia.
     """
     relations = work_item_data.get("relations", [])
     
     url_predecesor = None
-    url_relacionado = None
+    urls_relacionados = []  # <-- CAMBIO: Ahora es una lista para guardar múltiples URLs
 
-    # 1. Recorrer las relaciones para identificar ambas URLs
+    # 1. Recorrer las relaciones e identificar TODAS las que existan
     for rel in relations:
         tipo_relacion = rel.get("rel")
         if tipo_relacion == "System.LinkTypes.Dependency-Reverse":
             url_predecesor = rel.get("url")
         elif tipo_relacion == "System.LinkTypes.Related":
-            url_relacionado = rel.get("url")
+            urls_relacionados.append(rel.get("url"))  # <-- CAMBIO: Añade cada URL encontrada a la lista
 
-    # Inicializamos el diccionario de resultados con valores por defecto
+    # Inicializamos el diccionario de resultados (relacionado ahora es una lista de objetos)
     resultado = {
         "predecesor": None,
-        "relacionado": None
+        "relacionado": []  # <-- CAMBIO: Ahora devolverá una lista de historias relacionadas
     }
 
-    # --- PROCESAR PREDECESOR ---
+    # --- PROCESAR PREDECESOR (Se mantiene igual) ---
     if url_predecesor:
         if "api-version" not in url_predecesor:
             url_predecesor += "?api-version=7.1"
@@ -63,12 +63,12 @@ def get_work_item_relations_data(work_item_data):
             res_pred.raise_for_status()
             pred_fields = res_pred.json().get("fields", {})
 
-            # Procesar Título (ID y Nombre)
+
             titulo_completo = pred_fields.get("System.Title", "")
             partes = titulo_completo.split(":", 1)
             id_req, nom_req = (partes[0].strip(), partes[1].strip()) if len(partes) == 2 else ("No encontrado", titulo_completo)
 
-            # Limpiar HTML
+
             desc_html = pred_fields.get("System.Description", "")
             desc_limpia = BeautifulSoup(desc_html, "html.parser").get_text().strip()
 
@@ -79,38 +79,31 @@ def get_work_item_relations_data(work_item_data):
             }
         except Exception as e:
             print(f"Error al consultar el predecesor: {e}")
+            
+    # --- PROCESAR ELEMENTOS RELACIONADOS (Múltiples Historias de Usuario) ---
+    if urls_relacionados:  # Si la lista contiene al menos una URL
+        for url_rel in urls_relacionados:
+            if "api-version" not in url_rel:
+                url_rel += "?api-version=7.1"
+                
+            try:
+                res_rel = requests.get(url_rel, auth=HTTPBasicAuth("", PAT))
+                res_rel.raise_for_status()
+                
+                rel_json = res_rel.json()
+                id_limpio = str(rel_json.get("id", ""))
+                rel_fields = rel_json.get("fields", {})
+                titulo_relacionado = rel_fields.get("System.Title", "").strip()
+
+                # Guardamos cada HU encontrada dentro de la lista de resultados
+                resultado["relacionado"].append({
+                    "id_relacionado": id_limpio,
+                    "titulo": titulo_relacionado
+                })
+            except Exception as e:
+                print(f"Error al consultar el ítem relacionado {url_rel}: {e}")
     else:
-        print(f"El Work Item {work_item_data.get('id')} no tiene una tarea predecesora vinculada.")
-
-
-    # --- PROCESAR RELACIONADO (Historia de Usuario) ---
-    if url_relacionado:
-        if "api-version" not in url_relacionado:
-            url_relacionado += "?api-version=7.1"
-            
-        try:
-            res_rel = requests.get(url_relacionado, auth=HTTPBasicAuth("", PAT))
-            res_rel.raise_for_status()
-            
-            # Guardamos todo el JSON de respuesta
-            rel_json = res_rel.json()
-            
-            # 1. Sacamos el ID directamente desde la raíz del JSON
-            id_limpio = str(rel_json.get("id", ""))
-            
-            # 2. Sacamos el título desde los fields
-            rel_fields = rel_json.get("fields", {})
-            titulo_relacionado = rel_fields.get("System.Title", "").strip()
-
-            # Guardamos en el diccionario con el ID 100% limpio
-            resultado["relacionado"] = {
-                "id_relacionado": id_limpio, # Ej: "30026"
-                "titulo": titulo_relacionado
-            }
-        except Exception as e:
-            print(f"Error al consultar el ítem relacionado: {e}")
-    else:
-        print(f"El Work Item {work_item_data.get('id')} no tiene un elemento relacionado (`System.LinkTypes.Related`).")
+        print(f"El Work Item {work_item_data.get('id')} no tiene elementos relacionados.")
 
     return resultado
 

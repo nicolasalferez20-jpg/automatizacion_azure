@@ -844,19 +844,26 @@ def generate_pdf(
         )
     )
 
-    dependencia = "N/A."
-    # Extraemos el ID y el Título de la HU relacionada desde el nuevo nodo
+    dependencias_list = []
+    
     if datos_requerimiento and isinstance(datos_requerimiento, dict):
-        relacionado = datos_requerimiento.get("relacionado")
-        if relacionado and relacionado.get("titulo"):
-            id_rel = relacionado.get("id_relacionado", "").strip()
-            titulo_rel = relacionado.get("titulo").strip()
-            
-            # Armamos la cadena solo con el ID y el Título (Ej: "30026 - Nombre de la HU")
-            dependencia = f"{id_rel} - {titulo_rel}" if id_rel else titulo_rel
+        lista_relacionados = datos_requerimiento.get("relacionado", [])
+        
+        # Iteramos sobre la lista de HUs que trajo el JSON
+        for rel in lista_relacionados:
+            id_rel = rel.get("id_relacionado", "")
+            titulo_rel = rel.get("titulo", "")
+            if titulo_rel:
+                dependencias_list.append(f"{id_rel} - {titulo_rel}" if id_rel else titulo_rel)
+
+    # Si la lista tiene elementos, los unimos con un salto de línea (<br/>) para ReportLab
+    if dependencias_list:
+        dependencia_texto = "<br/>".join(dependencias_list)
+    else:
+        dependencia_texto = "N/A."
 
     tabla16 = Table(
-        [[dependencia]],
+        [[dependencia_texto]],
         colWidths=[18 * cm],
         rowHeights=[3 * cm]
     )
