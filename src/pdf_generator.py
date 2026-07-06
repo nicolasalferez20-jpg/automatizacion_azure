@@ -523,11 +523,15 @@ def generate_pdf(
     # ==================================================
     # SECCIÓN 10
     # ==================================================
+    requerimiento = work_item["fields"].get(
+        "System.Title",
+        ""
+    )
 
     tabla10 = Table(
         [
             ["10. Nombre Historia de Usuario"],
-            [nombre_requerimiento]
+            [requerimiento]
         ],
         colWidths=[18 * cm]
     )
