@@ -838,19 +838,36 @@ def generate_pdf(
     # ==================================================
     # SECCIÓN 16
     # ==================================================
-    elementos.append(titulo_seccion("16. ¿Depende de otras historias de usuario?"))
+    elementos.append
+    (titulo_seccion("16. ¿Depende de otras historias de usuario?"))
 
     dependencia = "N/A."
+    # Extraemos el ID y el Título de la HU relacionada desde el nuevo nodo
     if datos_requerimiento and isinstance(datos_requerimiento, dict):
-     relacionado = datos_requerimiento.get("relacionado")  # <-- Apunta al nuevo nodo
-    if relacionado and relacionado.get("titulo"):
-        id_rel = relacionado.get("id_relacionado", "")
-        titulo_rel = relacionado.get("titulo")
-        dependencia = f"{id_rel} - {titulo_rel}" if id_rel else titulo_rel
+        relacionado = datos_requerimiento.get("relacionado")
+        if relacionado and relacionado.get("titulo"):
+            id_rel = relacionado.get("id_relacionado", "").strip()
+            titulo_rel = relacionado.get("titulo").strip()
+            
+            # Armamos la cadena solo con el ID y el Título (Ej: "30026 - Nombre de la HU")
+            dependencia = f"{id_rel} - {titulo_rel}" if id_rel else titulo_rel
 
-    tabla16 = Table([[dependencia]], colWidths=[18 * cm], rowHeights=[3 * cm])
-    # ... (reste del estilo que ya definimos)
+    tabla16 = Table(
+        [[dependencia]],
+        colWidths=[18 * cm],
+        rowHeights=[3 * cm]
+    )
+
+    tabla16.setStyle(
+        TableStyle([
+            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE")
+        ])
+    )
+
     elementos.append(tabla16)
+    elementos.append(Spacer(1, 10))
 
     # ==================================================
     # SECCIÓN 17
