@@ -336,17 +336,24 @@ def generate_pdf(
     # SECCIÓN 1 Y 2
     # ==================================================
 
-# Validación por si no llegó requerimiento predecesor
-    if not datos_requerimiento:
-        datos_requerimiento = {
+    # === ADAPTACIÓN PARA LA NUEVA ESTRUCTURA ANIDADA ===
+    # 1. Intentamos extraer el nodo del predecesor de forma segura
+    req_info = None
+    if datos_requerimiento and isinstance(datos_requerimiento, dict):
+        req_info = datos_requerimiento.get("predecesor")
+
+    # 2. Validación por si no llegó requerimiento predecesor (Mantiene tus valores por defecto)
+    if not req_info:
+        req_info = {
             "id_requerimiento": "N/A",
             "nombre_requerimiento": "No asignado",
             "descripcion": "No se encontró un requerimiento predecesor vinculado."
         }
 
-    # Extraemos el nombre e ID mapeados desde la respuesta del predecesor
-    nombre_requerimiento = datos_requerimiento["nombre_requerimiento"]
-    id_requerimiento = datos_requerimiento["id_requerimiento"]
+    # Extraemos el nombre e ID mapeados desde la respuesta del predecesor utilizando req_info
+    nombre_requerimiento = req_info["nombre_requerimiento"]
+    id_requerimiento = req_info["id_requerimiento"]
+    # ==================================================
 
     tabla12 = Table(
         [
@@ -387,8 +394,8 @@ def generate_pdf(
         )
     )
 
-    # Reemplazamos 'Custom.Contexto' de la HU por la descripción real extraída del requerimiento
-    descripcion = datos_requerimiento["descripcion"]
+    # Reemplazamos 'Custom.Contexto' de la HU por la descripción real extraída del requerimiento (usando req_info)
+    descripcion = req_info["descripcion"]
 
     tabla3 = Table(
         [[p(descripcion, styles)]],
@@ -831,36 +838,19 @@ def generate_pdf(
     # ==================================================
     # SECCIÓN 16
     # ==================================================
-    elementos.append(
-        titulo_seccion(
-            "16. ¿Depende de otras historias de usuario?"
-        )
-    )
+    elementos.append(titulo_seccion("16. ¿Depende de otras historias de usuario?"))
 
     dependencia = "N/A."
+    if datos_requerimiento and isinstance(datos_requerimiento, dict):
+     relacionado = datos_requerimiento.get("relacionado")  # <-- Apunta al nuevo nodo
+    if relacionado and relacionado.get("titulo"):
+        id_rel = relacionado.get("id_relacionado", "")
+        titulo_rel = relacionado.get("titulo")
+        dependencia = f"{id_rel} - {titulo_rel}" if id_rel else titulo_rel
 
-    # if work_item["fields"].get("System.Parent"):
-    #     dependencia = (
-    #         f"Historia Padre: "
-    #         f"{work_item['fields']['System.Parent']}"
-    #     )
-
-    tabla16 = Table(
-        [[dependencia]],
-        colWidths=[18 * cm],
-        rowHeights=[3 * cm]
-    )
-
-    tabla16.setStyle(
-        TableStyle([
-            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE")
-        ])
-    )
-
+    tabla16 = Table([[dependencia]], colWidths=[18 * cm], rowHeights=[3 * cm])
+    # ... (reste del estilo que ya definimos)
     elementos.append(tabla16)
-    elementos.append(Spacer(1, 10))
 
     # ==================================================
     # SECCIÓN 17

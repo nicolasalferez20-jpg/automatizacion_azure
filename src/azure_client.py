@@ -29,59 +29,83 @@ def get_work_item(work_item_id):
     return response.json()
 
 
-def get_predecessor_data(work_item_data):
+def get_work_item_relations_data(work_item_data):
     """
-    Busca la relación de tipo Predecesor en el JSON del Work Item original,
-    hace la petición a Azure para traer sus datos y extrae los 3 campos limpios.
+    Busca las relaciones de tipo Predecesor y Relacionado en el JSON del Work Item,
+    hace las peticiones a Azure y extrae la información limpia de ambos.
     """
     relations = work_item_data.get("relations", [])
-    url_predecesor = None
-
-    # 1. Buscar la relación exacta del predecesor
-    for rel in relations:
-        if rel.get("rel") == "System.LinkTypes.Dependency-Reverse":
-            url_predecesor = rel.get("url")
-            break
-
-    if not url_predecesor:
-        print(f"El Work Item {work_item_data.get('id')} no tiene una tarea predecesora vinculada.")
-        return None
-
-    # Opcional: Asegurar que tenga la versión de la API en la URL
-    if "api-version" not in url_predecesor:
-        url_predecesor += "?api-version=7.1"
-
-    # 2. Consultar los datos específicos del requerimiento/predecesor
-    response = requests.get(
-        url_predecesor,
-        auth=HTTPBasicAuth("", PAT)
-    )
-    response.raise_for_status()
     
-    pred_data = response.json()
-    fields = pred_data.get("fields", {})
+    url_predecesor = None
+    url_relacionado = None
 
-    # 3. Procesar el Título para separar ID y Nombre usando split (SOL-RUM-014: Detalle...)
-    titulo_completo = fields.get("System.Title", "")
-    partes = titulo_completo.split(":", 1)
+    # 1. Recorrer las relaciones para identificar ambas URLs
+    for rel in relations:
+        tipo_relacion = rel.get("rel")
+        if tipo_relacion == "System.LinkTypes.Dependency-Reverse":
+            url_predecesor = rel.get("url")
+        elif tipo_relacion == "System.LinkTypes.Related":
+            url_relacionado = rel.get("url")
 
-    if len(partes) == 2:
-        id_requerimiento = partes[0].strip()
-        nombre_requerimiento = partes[1].strip()
-    else:
-        id_requerimiento = "No encontrado"
-        nombre_requerimiento = titulo_completo
-
-    # 4. Limpiar el HTML de la Descripción
-    descripcion_html = fields.get("System.Description", "")
-    descripcion_limpia = BeautifulSoup(descripcion_html, "html.parser").get_text().strip()
-
-    # Retornamos un diccionario listo con los tres campos que necesita tu formato
-    return {
-        "id_requerimiento": id_requerimiento,
-        "nombre_requerimiento": nombre_requerimiento,
-        "descripcion": descripcion_limpia
+    # Inicializamos el diccionario de resultados con valores por defecto
+    resultado = {
+        "predecesor": None,
+        "relacionado": None
     }
+
+    # --- PROCESAR PREDECESOR ---
+    if url_predecesor:
+        if "api-version" not in url_predecesor:
+            url_predecesor += "?api-version=7.1"
+            
+        try:
+            res_pred = requests.get(url_predecesor, auth=HTTPBasicAuth("", PAT))
+            res_pred.raise_for_status()
+            pred_fields = res_pred.json().get("fields", {})
+
+            # Procesar Título (ID y Nombre)
+            titulo_completo = pred_fields.get("System.Title", "")
+            partes = titulo_completo.split(":", 1)
+            id_req, nom_req = (partes[0].strip(), partes[1].strip()) if len(partes) == 2 else ("No encontrado", titulo_completo)
+
+            # Limpiar HTML
+            desc_html = pred_fields.get("System.Description", "")
+            desc_limpia = BeautifulSoup(desc_html, "html.parser").get_text().strip()
+
+            resultado["predecesor"] = {
+                "id_requerimiento": id_req,
+                "nombre_requerimiento": nom_req,
+                "descripcion": desc_limpia
+            }
+        except Exception as e:
+            print(f"Error al consultar el predecesor: {e}")
+    else:
+        print(f"El Work Item {work_item_data.get('id')} no tiene una tarea predecesora vinculada.")
+
+
+    # --- PROCESAR RELACIONADO (Historia de Usuario) ---
+    if url_relacionado:
+        if "api-version" not in url_relacionado:
+            url_relacionado += "?api-version=7.1"
+            
+        try:
+            res_rel = requests.get(url_relacionado, auth=HTTPBasicAuth("", PAT))
+            res_rel.raise_for_status()
+            rel_fields = res_rel.json().get("fields", {})
+
+            # Extraemos el título de la historia de usuario relacionada
+            titulo_relacionado = rel_fields.get("System.Title", "").strip()
+
+            resultado["relacionado"] = {
+                "id_relacionado": url_relacionado.split("/")[-1], # Extrae el ID (ej: 30026) desde la URL
+                "titulo": titulo_relacionado
+            }
+        except Exception as e:
+            print(f"Error al consultar el ítem relacionado: {e}")
+    else:
+        print(f"El Work Item {work_item_data.get('id')} no tiene un elemento relacionado (`System.LinkTypes.Related`).")
+
+    return resultado
 
 
 def get_total_user_stories_by_sprint(iteration_path):
