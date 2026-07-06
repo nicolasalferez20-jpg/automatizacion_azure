@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.azure_client import (
     get_work_item,
     get_predecessor_data,
+    get_related_user_story_titles,
     get_total_user_stories_by_sprint
 )
 
@@ -41,27 +42,37 @@ def home():
 def crear_pdf(id_hu: int):
 
     try:
-        # 1. Obtener la Historia de Usuario (ahora incluye relations internamente)
+
+        # 1. Obtener la Historia de Usuario
         work_item = get_work_item(id_hu)
 
-        # 2. Obtener el Sprint al que pertenece la HU
+        # 2. Obtener el Sprint
         iteration_path = work_item["fields"]["System.IterationPath"]
 
-        # 3. Obtener el total de HU del Sprint
-        total_hu = get_total_user_stories_by_sprint(iteration_path)
+        # 3. Total de Historias del Sprint
+        total_hu = get_total_user_stories_by_sprint(
+            iteration_path
+        )
 
-        # === NUEVO PASO: Obtener datos del predecesor (Requerimiento) ===
-        datos_requerimiento = get_predecessor_data(work_item)
-        # ===============================================================
+        # 4. Obtener datos del requerimiento predecesor
+        datos_requerimiento = get_predecessor_data(
+            work_item
+        )
 
-        # 4. Generar el PDF pasándole los datos del predecesor
+        # 5. Obtener historias relacionadas
+        historias_relacionadas = get_related_user_story_titles(
+            work_item
+        )
+
+        # 6. Generar PDF
         ruta_pdf = generate_pdf(
             work_item,
             total_hu,
-            datos_requerimiento  # <-- Envías el diccionario con id, nombre y descripción limpia
+            datos_requerimiento,
+            historias_relacionadas
         )
 
-        # 5. Subir el PDF a Supabase
+        # 7. Subir PDF a Supabase
         nombre_archivo = f"HU_{id_hu}.pdf"
 
         url_pdf = subir_pdf_supabase(
@@ -69,7 +80,7 @@ def crear_pdf(id_hu: int):
             nombre_archivo
         )
 
-        # 6. Eliminar el archivo temporal
+        # 8. Eliminar archivo temporal
         if os.path.exists(ruta_pdf):
             os.remove(ruta_pdf)
 
@@ -77,7 +88,8 @@ def crear_pdf(id_hu: int):
             "mensaje": "PDF generado correctamente y guardado en Supabase Storage",
             "archivo": nombre_archivo,
             "url_archivo": url_pdf,
-            "total_historias_sprint": total_hu
+            "total_historias_sprint": total_hu,
+            "historias_relacionadas": historias_relacionadas
         }
 
     except Exception as e:

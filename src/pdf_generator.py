@@ -244,7 +244,8 @@ def dibujar_encabezado(canvas, doc):
 def generate_pdf(
     work_item,
     total_hu,
-    datos_requerimiento
+    datos_requerimiento,
+    historias_relacionadas
 ):
 
     output_folder = Path("output")
@@ -336,7 +337,7 @@ def generate_pdf(
     # SECCIÓN 1 Y 2
     # ==================================================
 
-# Validación por si no llegó requerimiento predecesor
+    # Validación por si no llegó requerimiento predecesor
     if not datos_requerimiento:
         datos_requerimiento = {
             "id_requerimiento": "N/A",
@@ -644,7 +645,7 @@ def generate_pdf(
             "12. Fuera de alcance"
         )
     )
- # datos ficticios
+    # datos ficticios
     tabla12_fuera = Table(
         [[
             "N/A."
@@ -832,32 +833,25 @@ def generate_pdf(
     # SECCIÓN 16
     # ==================================================
     elementos.append(
-        titulo_seccion(
-            "16. ¿Depende de otras historias de usuario?"
-        )
+    titulo_seccion(
+        "16. ¿Depende de otras historias de usuario?"
     )
+   )
 
-    dependencia = "N/A."
-
-    # if work_item["fields"].get("System.Parent"):
-    #     dependencia = (
-    #         f"Historia Padre: "
-    #         f"{work_item['fields']['System.Parent']}"
-    #     )
+    dependencias = "\n".join(historias_relacionadas)
 
     tabla16 = Table(
-        [[dependencia]],
-        colWidths=[18 * cm],
-        rowHeights=[3 * cm]
+    [[dependencias]],
+    colWidths=[18 * cm],
+    rowHeights=[3 * cm]
     )
 
     tabla16.setStyle(
-        TableStyle([
-            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE")
-        ])
-    )
+    TableStyle([
+        ("GRID", (0, 0), (-1, -1), 1, colors.black),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE")
+    ]) )
 
     elementos.append(tabla16)
     elementos.append(Spacer(1, 10))
@@ -959,13 +953,7 @@ def generate_pdf(
                 "Firma",
                 "Fecha"
             ],
-            [
-                p("Marcela Bociga Angulo", styles),
-                p("Coordinador de Proyectos CMMI Nivel 1", styles),
-                "Desarrollo",
-                "",
-                ""
-            ],
+            
             [
                 p("Eduin Fabian Ordonez Parra", styles),
                 p("Product Manager Specialist", styles),
