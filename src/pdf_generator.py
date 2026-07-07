@@ -54,58 +54,41 @@ def organizar_criterios(html):
     soup = BeautifulSoup(html, "html.parser")
 
     resultado = []
-    contador = 1
 
-    # Buscar todos los títulos posibles
-    titulos = soup.find_all(["b", "strong"])
+    contador = 0
+    dentro_de_criterio = False
 
-    # Si no existen títulos, devolver únicamente la lista numerada
-    if not titulos:
+    for tag in soup.find_all(["b", "strong", "li"]):
+
+        if tag.name in ["b", "strong"]:
+
+            contador += 1
+            dentro_de_criterio = True
+
+            resultado.append(
+                f"{contador}. {tag.get_text(' ', strip=True)}"
+            )
+
+        elif tag.name == "li" and dentro_de_criterio:
+
+            texto = tag.get_text(" ", strip=True)
+
+            if texto:
+                resultado.append(
+                    f"&nbsp;&nbsp;&nbsp;• {texto}"
+                )
+
+    # Si no hubo títulos, numerar únicamente los li
+    if contador == 0:
+
+        resultado = []
+
         for i, li in enumerate(soup.find_all("li"), start=1):
+
             texto = li.get_text(" ", strip=True)
+
             if texto:
                 resultado.append(f"{i}. {texto}")
-
-        return "<br/>".join(resultado)
-
-    # Procesar cada bloque de criterios
-    for titulo in titulos:
-
-        texto_titulo = titulo.get_text(" ", strip=True)
-
-        if not texto_titulo:
-            continue
-
-        resultado.append(f"{contador}. {texto_titulo}")
-
-        # Buscar únicamente el siguiente UL asociado a este título
-        siguiente = titulo.parent
-
-        while siguiente:
-
-            siguiente = siguiente.find_next_sibling()
-
-            if siguiente is None:
-                break
-
-            # Si encontramos otro título, terminamos este bloque
-            if siguiente.find(["b", "strong"]):
-                break
-
-            # Si encontramos la lista correspondiente
-            if siguiente.name == "ul":
-
-                for li in siguiente.find_all("li", recursive=False):
-
-                    texto = li.get_text(" ", strip=True)
-
-                    if texto:
-                        resultado.append(f"&nbsp;&nbsp;&nbsp;• {texto}")
-
-                break
-
-        resultado.append("<br/>")
-        contador += 1
 
     return "<br/>".join(resultado)
 
