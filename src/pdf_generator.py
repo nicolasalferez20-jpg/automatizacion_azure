@@ -9,6 +9,7 @@ from reportlab.platypus import (
 )
 
 from reportlab.lib import colors
+from xml.sax.saxutils import escape
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.units import cm
 from bs4 import BeautifulSoup
@@ -849,20 +850,24 @@ def generate_pdf(
     if datos_requerimiento and isinstance(datos_requerimiento, dict):
         lista_relacionados = datos_requerimiento.get("relacionado", [])
         
-        # Iteramos sobre la lista de HUs que trajo el JSON
+        
         for rel in lista_relacionados:
             id_rel = rel.get("id_relacionado", "")
             titulo_rel = rel.get("titulo", "")
+            
             if titulo_rel:
-                dependencias_list.append(f"{id_rel} - {titulo_rel}" if id_rel else titulo_rel)
+                # === EL CAMBIO CLAVE: Escapar caracteres especiales del título de Azure ===
+                titulo_escapado = escape(titulo_rel)
+                dependencias_list.append(f"{id_rel} - {titulo_escapado}" if id_rel else titulo_escapado)
 
-    # Si la lista tiene elementos, los unimos con un salto de línea (<br/>) para ReportLab
+    # Ahora unimos de forma segura con la etiqueta <br/>
     if dependencias_list:
         dependencia_texto = "<br/>".join(dependencias_list)
     else:
         dependencia_texto = "N/A."
-        
-        contenido_celda = p(dependencia_texto, styles)
+
+    # Renderizamos de manera segura usando tu función p()
+    contenido_celda = p(dependencia_texto, styles)
 
     tabla16 = Table(
         [[contenido_celda]],
