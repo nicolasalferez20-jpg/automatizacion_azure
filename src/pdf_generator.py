@@ -861,9 +861,11 @@ def generate_pdf(
         dependencia_texto = "<br/>".join(dependencias_list)
     else:
         dependencia_texto = "N/A."
+        
+        contenido_celda = p(dependencia_texto, styles)
 
     tabla16 = Table(
-        [[dependencia_texto]],
+        [[contenido_celda]],
         colWidths=[18 * cm],
         rowHeights=[3 * cm]
     )
