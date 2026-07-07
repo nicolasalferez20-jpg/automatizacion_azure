@@ -1,4 +1,5 @@
 import os
+import traceback
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -92,9 +93,10 @@ def crear_pdf(id_hu: int):
         }
 
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
-            detail=f"Error al generar el PDF de la HU {id_hu}: {str(e)}"
+            detail=str(e)
         )
 
 
@@ -140,6 +142,7 @@ def obtener_historial():
         return historial[::-1]
 
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail=f"Error al obtener el historial de Supabase: {str(e)}"
