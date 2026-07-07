@@ -160,10 +160,10 @@ def get_total_user_stories_by_sprint(iteration_path):
 
     details_response.raise_for_status()
 
-    work_items_validos = [
+    total_historias_sprint = [
         item
         for item in details_response.json()["value"]
         if not item["fields"].get("System.Title", "").strip().lower().startswith("spike")
         ]
     
-    return len(work_items_validos)
+    return len(total_historias_sprint)
