@@ -982,26 +982,25 @@ def generate_pdf(
                 "Área/Empressa",
                 "Firma",
                 "Fecha"
-            ],
-            
+                ],
             [
                 p("Eduin Fabian Ordonez Parra", styles),
                 p("Product Manager Specialist", styles),
                 "Desarrollo",
                 "",
                 ""
-            ],
+                ],
             [
                 p("Carlos Alberto Rodriguez Sanchez", styles),
                 p("Líder Técnico Nivel 1", styles),
                 "Desarrollo",
                 "",
                 ""
-            ]
+                ]
             
         ],
         colWidths=[4.3 * cm, 4.3 * cm, 3.2 * cm, 3.9 * cm, 2.3 * cm],
-        rowHeights=[1.2 * cm, 1.2 * cm, 1.2 * cm, 1.2 * cm]
+        rowHeights=[1.2 * cm, 1.2 * cm, 1.2 * cm]
     )
 
     tabla_aprobado.setStyle(
