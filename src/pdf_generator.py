@@ -54,36 +54,58 @@ def organizar_criterios(html):
     soup = BeautifulSoup(html, "html.parser")
 
     resultado = []
+    contador = 1
 
-    titulos = soup.find_all("b")
+    # Buscar todos los títulos posibles
+    titulos = soup.find_all(["b", "strong"])
 
-    if titulos:
-        contador = 1
+    # Si no existen títulos, devolver únicamente la lista numerada
+    if not titulos:
+        for i, li in enumerate(soup.find_all("li"), start=1):
+            texto = li.get_text(" ", strip=True)
+            if texto:
+                resultado.append(f"{i}. {texto}")
 
-        for titulo in titulos:
+        return "<br/>".join(resultado)
 
-            resultado.append(
-                f"{contador}. {titulo.get_text(strip=True)}"
-            )
+    # Procesar cada bloque de criterios
+    for titulo in titulos:
 
-            ul = titulo.find_parent().find_next("ul")
+        texto_titulo = titulo.get_text(" ", strip=True)
 
-            if ul:
-                for li in ul.find_all("li", recursive=False):
-                    resultado.append(
-                        f"&nbsp;&nbsp;&nbsp;• {li.get_text(strip=True)}"
-                    )
+        if not texto_titulo:
+            continue
 
-            resultado.append("<br/>")
-            contador += 1
+        resultado.append(f"{contador}. {texto_titulo}")
 
-    else:
-        lis = soup.find_all("li")
+        # Buscar únicamente el siguiente UL asociado a este título
+        siguiente = titulo.parent
 
-        for i, li in enumerate(lis, start=1):
-            resultado.append(
-                f"{i}. {li.get_text(strip=True)}"
-            )
+        while siguiente:
+
+            siguiente = siguiente.find_next_sibling()
+
+            if siguiente is None:
+                break
+
+            # Si encontramos otro título, terminamos este bloque
+            if siguiente.find(["b", "strong"]):
+                break
+
+            # Si encontramos la lista correspondiente
+            if siguiente.name == "ul":
+
+                for li in siguiente.find_all("li", recursive=False):
+
+                    texto = li.get_text(" ", strip=True)
+
+                    if texto:
+                        resultado.append(f"&nbsp;&nbsp;&nbsp;• {texto}")
+
+                break
+
+        resultado.append("<br/>")
+        contador += 1
 
     return "<br/>".join(resultado)
 
