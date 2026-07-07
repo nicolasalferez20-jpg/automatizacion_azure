@@ -2,10 +2,10 @@ import os
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-# Importaciones desde tus módulos internos en la carpeta src
+
 from src.azure_client import (
     get_work_item,
-    get_work_item_relations_data,  # Esta función ya resuelve y unifica ambas relaciones
+    get_work_item_relations_data,
     get_total_user_stories_by_sprint
 )
 from src.pdf_generator import generate_pdf
@@ -60,7 +60,7 @@ def crear_pdf(id_hu: int):
         iteration_path = work_item["fields"]["System.IterationPath"]
 
         # 3. Obtener el total de historias de usuario asociadas a ese Sprint
-        total_hu = get_total_user_stories_by_sprint(iteration_path)
+        total_historias_sprint = get_total_user_stories_by_sprint(iteration_path)
 
         # 4. Obtener el diccionario unificado de relaciones (Predecesor + Relacionado)
         datos_requerimiento = get_work_item_relations_data(work_item)
@@ -68,7 +68,7 @@ def crear_pdf(id_hu: int):
         # 5. Generar el PDF pasándole la metadata de las relaciones
         ruta_pdf = generate_pdf(
             work_item,
-            total_hu,
+            total_historias_sprint,
             datos_requerimiento  # Enviamos el objeto con la estructura unificada de relaciones
         )
 
@@ -88,7 +88,7 @@ def crear_pdf(id_hu: int):
             "mensaje": "PDF generado correctamente y guardado en Supabase Storage",
             "archivo": nombre_archivo,
             "url_archivo": url_pdf,
-            "total_historias_sprint": total_hu
+            "total_historias_sprint": total_historias_sprint
         }
 
     except Exception as e:

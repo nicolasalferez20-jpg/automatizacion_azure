@@ -244,7 +244,7 @@ def dibujar_encabezado(canvas, doc):
 
 def generate_pdf(
     work_item,
-    total_hu,
+    total_historias_sprint,
     datos_requerimiento
 ):
 
@@ -427,7 +427,7 @@ def generate_pdf(
             ],
             [
                 "Tecnico",
-                str(total_hu)
+                str(total_historias_sprint)
             ]
         ],
         colWidths=[9 * cm, 9 * cm]
@@ -983,13 +983,7 @@ def generate_pdf(
                 "Firma",
                 "Fecha"
             ],
-            [
-                p("Marcela Bociga Angulo", styles),
-                p("Coordinador de Proyectos CMMI Nivel 1", styles),
-                "Desarrollo",
-                "",
-                ""
-            ],
+            
             [
                 p("Eduin Fabian Ordonez Parra", styles),
                 p("Product Manager Specialist", styles),

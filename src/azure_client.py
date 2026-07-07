@@ -109,7 +109,7 @@ def get_work_item_relations_data(work_item_data):
 
 
 def get_total_user_stories_by_sprint(iteration_path):
-    
+
     project_encoded = quote(PROJECT)
 
     url = (
@@ -135,5 +135,35 @@ def get_total_user_stories_by_sprint(iteration_path):
     )
 
     response.raise_for_status()
+
+    work_items = response.json()["workItems"]
+
+    # Si no hay historias
+    if not work_items:
+        return 0
+
+    # Obtener los IDs
+    ids = ",".join(str(item["id"]) for item in work_items)
+
+    # Consultar los títulos de todas las HU en una sola petición
+    details_url = (
+        f"https://dev.azure.com/{ORG}/{project_encoded}"
+        f"/_apis/wit/workitems?ids={ids}"
+        f"&fields=System.Title"
+        f"&api-version=7.1"
+    )
+
+    details_response = requests.get(
+        details_url,
+        auth=HTTPBasicAuth("", PAT)
+    )
+
+    details_response.raise_for_status()
+
+    work_items_validos = [
+        item
+        for item in details_response.json()["value"]
+        if not item["fields"].get("System.Title", "").strip().lower().startswith("spike")
+        ]
     
-    return len(response.json()["workItems"])
+    return len(work_items_validos)
