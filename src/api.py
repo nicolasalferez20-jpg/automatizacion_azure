@@ -11,6 +11,7 @@ from src.azure_client import (
 )
 from src.pdf_generator import generate_pdf
 from src.supabase_client import (
+    eliminar_pdf_supabase,
     subir_pdf_supabase,
     supabase_client,
     BUCKET_NAME
@@ -147,3 +148,20 @@ def obtener_historial():
             status_code=500,
             detail=f"Error al obtener el historial de Supabase: {str(e)}"
         )
+
+from fastapi import HTTPException
+
+@app.delete("/historial/{nombre_archivo}")
+def eliminar_pdf(nombre_archivo: str):
+
+    eliminado = eliminar_pdf_supabase(nombre_archivo)
+
+    if not eliminado:
+        raise HTTPException(
+            status_code=404,
+            detail="No fue posible eliminar el PDF"
+        )
+
+    return {
+        "mensaje": "PDF eliminado correctamente"
+    }

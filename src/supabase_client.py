@@ -1,5 +1,6 @@
 import os
 from supabase import create_client, Client
+import supabase
 
 # 1. Inicializar el cliente usando las variables de entorno
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -29,3 +30,11 @@ def subir_pdf_supabase(ruta_pdf: str, nombre_archivo: str) -> str:
     # 4. Obtener y retornar la URL pública del archivo
     url_publica = supabase_client.storage.from_(BUCKET_NAME).get_public_url(nombre_archivo)
     return url_publica
+
+def eliminar_pdf_supabase(nombre_archivo: str):
+    try:
+        supabase.storage.from_(BUCKET_NAME).remove([nombre_archivo])
+        return True
+    except Exception as e:
+        print(e)
+        return False
