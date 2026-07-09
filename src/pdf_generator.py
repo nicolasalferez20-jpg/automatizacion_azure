@@ -722,27 +722,27 @@ def generate_pdf(
             "14. Criterios de seguridad"
         )
     )
-    texto_hu = f"""
-      Como:
-      {como}
+    # texto_hu = f"""
+    #   Como:
+    #   {como}
     
-      Quiero:
-      {quiero}
+    #   Quiero:
+    #   {quiero}
     
-      Con la finalidad de:
-      {para}
+    #   Con la finalidad de:
+    #   {para}
 
-      Cuando:
-      {contexto}
+    #   Cuando:
+    #   {contexto}
 
-      Requerimientos:
-      {requerimientos}
+    #   Requerimientos:
+    #   {requerimientos}
 
-      Criterios de aceptación:
-      {criterios}
-      """
-    resultado_seguridad = analizar_seguridad(
-    texto_hu)
+    #   Criterios de aceptación:
+    #   {criterios}
+    #   """
+    # resultado_seguridad = analizar_seguridad(
+    # texto_hu)
 
     tabla14 = Table(
         [
@@ -752,27 +752,33 @@ def generate_pdf(
         ],
         [
             p("Mecanismo para validar proceso de Autenticación y Autorización", styles
-            ),
-            p(resultado_seguridad["autenticacion"], styles
-            )
+            ),p("•	Acceso a la plataforma mediante roles 2FA para inicio de sesión (App de authenticator)", styles
+              ),
+            p("•	Envío de código OTP para la comprobación de correo electrónico en el registro token jwt librería de aws Cognito", styles)
+            # p(resultado_seguridad["autenticacion"], styles
+            # )
         ],
         [
             p("Cifrado de datos sensibles", styles
-            ),
-            p(resultado_seguridad["cifrado"], styles
-            )
+            ),p("•	Cifrado post-cuántico con el algoritmo de Kyber KEM", styles
+              )
+            # p(resultado_seguridad["cifrado"], styles
+            # )
         ],
         [
             p("Mecanismo de comprobación de integridad de los datos", styles
-            ),
-            p(resultado_seguridad["integridad"], styles
-            )
+            ),p("", styles
+              )
+            # p(resultado_seguridad["integridad"], styles
+            # )
         ],
         [
             p("Inclusión de logs de trazabilidad", styles
             ),
-            p(resultado_seguridad["logs"], styles
-            )
+            p("•	Almacenamiento de transacciones de blockchain en base de datos", styles
+              )
+            # p(resultado_seguridad["logs"], styles
+            # )
         ]
         ],
         colWidths=[7 * cm, 11 * cm]
