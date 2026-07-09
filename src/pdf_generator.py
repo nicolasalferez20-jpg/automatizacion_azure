@@ -752,9 +752,9 @@ def generate_pdf(
         ],
         [
             p("Mecanismo para validar proceso de Autenticación y Autorización", styles
-            ),p("•	Acceso a la plataforma mediante roles 2FA para inicio de sesión (App de authenticator)", styles
-              ),
-            p("•	Envío de código OTP para la comprobación de correo electrónico en el registro token jwt librería de aws Cognito", styles)
+            ),p("•	Acceso a la plataforma mediante roles 2FA para inicio de sesión (App de authenticator).<br/>"
+                "•	Envío de código OTP para la comprobación de correo electrónico en el registro token jwt librería de aws Cognito", styles
+              )
             # p(resultado_seguridad["autenticacion"], styles
             # )
         ],
