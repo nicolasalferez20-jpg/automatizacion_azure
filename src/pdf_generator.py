@@ -243,7 +243,7 @@ def dibujar_encabezado(canvas, doc):
 
     encabezado.drawOn(
         canvas,
-        doc.leftMargin +15,
+        doc.leftMargin,
         doc.height + doc.topMargin - alto
     )
 
@@ -995,6 +995,13 @@ def generate_pdf(
                 "Fecha"
                 ],
             [
+                p("Linda Daniela Corchuelo Pachon", styles),
+                p("Analista de requerimientos Junior Nivel 3", styles),
+                "Desarrollo",
+                "",
+                ""
+                ],
+            [
                 p("Eduin Fabian Ordonez Parra", styles),
                 p("Product Manager Specialist", styles),
                 "Desarrollo",
@@ -1011,7 +1018,7 @@ def generate_pdf(
             
         ],
         colWidths=[4.3 * cm, 4.3 * cm, 3.2 * cm, 3.9 * cm, 2.3 * cm],
-        rowHeights=[1.2 * cm, 1.2 * cm, 1.2 * cm]
+        rowHeights=[1.2 * cm, 1.2 * cm, 1.2 * cm, 1.2 * cm]
     )
 
     tabla_aprobado.setStyle(
