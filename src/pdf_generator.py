@@ -243,8 +243,8 @@ def dibujar_encabezado(canvas, doc):
 
     encabezado.drawOn(
         canvas,
-        doc.leftMargin,
-        doc.height + doc.topMargin - alto
+        doc.leftMargin ,
+        doc.height + doc.topMargin
     )
 
 def generate_pdf(
@@ -1018,7 +1018,7 @@ def generate_pdf(
             
         ],
         colWidths=[4.3 * cm, 4.3 * cm, 3.2 * cm, 3.9 * cm, 2.3 * cm],
-        rowHeights=[1.2 * cm, 1.2 * cm, 1.2 * cm, 1.2 * cm]
+        rowHeights=[1.2 * cm, 1.8 * cm, 1.2 * cm, 1.2 * cm]
     )
 
     tabla_aprobado.setStyle(
