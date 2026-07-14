@@ -1017,7 +1017,7 @@ def generate_pdf(
                 ]
             
         ],
-        colWidths=[4.3 * cm, 4.3 * cm, 3.2 * cm, 3.9 * cm, 2.3 * cm],
+        colWidths=[4.3 * cm, 4.1 * cm, 3.2 * cm, 4.5 * cm, 1.9 * cm],
         rowHeights=[1.2 * cm, 1.6 * cm, 1.2 * cm, 1.2 * cm]
     )
 
