@@ -1,9 +1,9 @@
 import requests
 from requests.auth import HTTPBasicAuth
 from urllib.parse import quote
-from bs4 import BeautifulSoup  # Asegúrate de tener instalado: pip install beautifulsoup4
+from bs4 import BeautifulSoup
 
-from src.config import PAT, ORG, PROJECT
+from src.config import PAT, ORG, PROJECT, TEAM
 
 
 
@@ -107,6 +107,101 @@ def get_work_item_relations_data(work_item_data):
 
     return resultado
 
+def get_user_stories_by_sprint(iteration_path):
+
+    project_encoded = quote(PROJECT)
+
+    # Consulta WIQL para obtener los IDs de las HU del Sprint
+    url = (
+        f"https://dev.azure.com/{ORG}/{project_encoded}"
+        f"/_apis/wit/wiql?api-version=7.1"
+    )
+
+    query = {
+        "query": f"""
+        SELECT [System.Id]
+        FROM WorkItems
+        WHERE
+            [System.TeamProject] = '{PROJECT}'
+            AND [System.WorkItemType] = 'User Story'
+            AND [System.IterationPath] = '{iteration_path}'
+        """
+    }
+
+    response = requests.post(
+        url,
+        json=query,
+        auth=HTTPBasicAuth("", PAT)
+    )
+
+    response.raise_for_status()
+
+    work_items = response.json().get("workItems", [])
+
+    # Si no hay historias
+    if not work_items:
+        return []
+
+    # Obtener los IDs encontrados
+    ids = ",".join(str(item["id"]) for item in work_items)
+
+    # Consultar únicamente los títulos para filtrar los Spike
+    details_url = (
+        f"https://dev.azure.com/{ORG}/{project_encoded}"
+        f"/_apis/wit/workitems?ids={ids}"
+        f"&fields=System.Title"
+        f"&api-version=7.1"
+    )
+
+    details_response = requests.get(
+        details_url,
+        auth=HTTPBasicAuth("", PAT)
+    )
+
+    details_response.raise_for_status()
+
+    historias = []
+
+    for item in details_response.json()["value"]:
+
+        titulo = item["fields"].get("System.Title", "").strip()
+
+        # Ignorar los Spike
+        if titulo.lower().startswith("spike"):
+            continue
+
+        historias.append(item["id"])
+
+    return historias
+
+def get_sprints():
+
+    project_encoded = quote(PROJECT)
+    team_encoded = quote(TEAM)
+
+    url = (
+        f"https://dev.azure.com/{ORG}/{project_encoded}/{team_encoded}"
+        f"/_apis/work/teamsettings/iterations?api-version=7.1"
+    )
+
+    response = requests.get(
+        url,
+        auth=HTTPBasicAuth("", PAT)
+    )
+
+    response.raise_for_status()
+
+    iterations = response.json().get("value", [])
+
+    sprints = []
+
+    for iteration in iterations:
+        sprints.append({
+            "name": iteration["name"],
+            "path": iteration["path"]
+        })
+
+    return sprints
 
 def get_total_user_stories_by_sprint(iteration_path):
 

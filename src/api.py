@@ -7,7 +7,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.azure_client import (
     get_work_item,
     get_work_item_relations_data,
-    get_total_user_stories_by_sprint
+    get_total_user_stories_by_sprint,
+    get_user_stories_by_sprint,
+    get_sprints
 )
 from src.pdf_generator import generate_pdf
 from src.supabase_client import (
@@ -100,6 +102,90 @@ def crear_pdf(id_hu: int):
             detail=str(e)
         )
 
+@app.get("/sprints")
+def obtener_sprints():
+    return get_sprints()
+
+@app.get("/generar-pdfs-sprint")
+def generar_pdfs_sprint(iteration_path: str):
+    """
+    Genera un PDF para todas las Historias de Usuario de un Sprint.
+    """
+
+    try:
+
+        # Obtener todas las HU del Sprint
+        historias = get_user_stories_by_sprint(iteration_path)
+
+        if not historias:
+            raise HTTPException(
+                status_code=404,
+                detail="No se encontraron Historias de Usuario para el Sprint indicado."
+            )
+
+        total_historias_sprint = len(historias)
+
+        pdfs_generados = []
+        errores = []
+
+        # Recorrer todas las HU
+        for id_hu in historias:
+
+            try:
+
+                # Obtener la HU
+                work_item = get_work_item(id_hu)
+
+                # Obtener las relaciones
+                datos_requerimiento = get_work_item_relations_data(work_item)
+
+                # Generar el PDF
+                ruta_pdf = generate_pdf(
+                    work_item,
+                    total_historias_sprint,
+                    datos_requerimiento
+                )
+
+                # Nombre del archivo
+                nombre_archivo = f"HU_{id_hu}.pdf"
+
+                # Subir a Supabase
+                url_pdf = subir_pdf_supabase(
+                    ruta_pdf,
+                    nombre_archivo
+                )
+
+                # Eliminar el PDF temporal
+                if os.path.exists(ruta_pdf):
+                    os.remove(ruta_pdf)
+
+                pdfs_generados.append({
+                    "id_hu": id_hu,
+                    "archivo": nombre_archivo,
+                    "url_archivo": url_pdf
+                })
+
+            except Exception as e:
+
+                errores.append({
+                    "id_hu": id_hu,
+                    "error": str(e)
+                })
+
+        return {
+            "mensaje": f"Se generaron {len(pdfs_generados)} PDFs.",
+            "sprint": iteration_path,
+            "total_historias": total_historias_sprint,
+            "pdfs_generados": pdfs_generados,
+            "errores": errores
+        }
+
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
 
 @app.get("/historial")
 def obtener_historial():
