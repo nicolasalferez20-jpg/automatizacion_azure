@@ -20,42 +20,56 @@ def subir_pdf_supabase(ruta_pdf: str, nombre_archivo: str) -> str:
     """
     Sube un PDF a Supabase Storage.
 
-    Si el archivo ya existe, intenta reemplazarlo utilizando upsert.
-    Retorna la URL pública del archivo.
+    Si el archivo ya existe, lo reemplaza automáticamente.
     """
+    
+
+    with open(ruta_pdf, "rb") as f:
+        file_data = f.read()
+
+    bucket = supabase_client.storage.from_(BUCKET_NAME)
 
     try:
 
-        with open(ruta_pdf, "rb") as f:
-            file_data = f.read()
-
-        respuesta = supabase_client.storage.from_(BUCKET_NAME).upload(
+        # Intentar subir normalmente
+        bucket.upload(
             path=nombre_archivo,
             file=file_data,
             file_options={
-                "content-type": "application/pdf",
-                "upsert": True
+                "content-type": "application/pdf"
             }
         )
 
-        print("Respuesta Supabase:")
-        print(respuesta)
-
-        return (
-            supabase_client.storage
-            .from_(BUCKET_NAME)
-            .get_public_url(nombre_archivo)
-        )
+        print(f"PDF subido correctamente: {nombre_archivo}")
 
     except Exception as e:
 
-        print("===================================")
-        print("ERROR SUBIENDO PDF A SUPABASE")
-        print(type(e))
-        print(e)
-        print("===================================")
+        print("El archivo ya existe. Intentando actualizar...")
 
-        raise
+        mensaje = str(e).lower()
+
+        if (
+            "already exists" in mensaje
+            or "duplicate" in mensaje
+            or "409" in mensaje
+        ):
+
+            # Si existe, actualizarlo
+            bucket.update(
+                path=nombre_archivo,
+                file=file_data,
+                file_options={
+                    "content-type": "application/pdf"
+                }
+            )
+
+            print(f"PDF actualizado correctamente: {nombre_archivo}")
+
+        else:
+            # Otro error distinto
+            raise
+
+    return bucket.get_public_url(nombre_archivo)
 
 
 def eliminar_pdf_supabase(nombre_archivo: str):
