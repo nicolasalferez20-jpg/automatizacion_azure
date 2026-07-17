@@ -243,7 +243,7 @@ def dibujar_encabezado(canvas, doc):
 
     encabezado.drawOn(
         canvas,
-        doc.leftMargin +20 ,
+        doc.leftMargin +23 ,
         doc.height + doc.topMargin - alto
     )
 
