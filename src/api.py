@@ -75,14 +75,18 @@ def crear_pdf(id_hu: int):
             total_historias_sprint,
             datos_requerimiento  # Enviamos el objeto con la estructura unificada de relaciones
         )
-
-        # 6. Definir el nombre del archivo y subirlo a Supabase Storage
-        nombre_archivo = f"HU_{id_hu}.pdf"
-        
+        # 6. Obtener el nombre del Sprint
+        nombre_sprint = (
+            iteration_path.split("\\")[-1]
+            .replace(" ", "_")
+            )
+        # Construir el nombre del archivo
+        nombre_archivo = f"HU_{id_hu}_{nombre_sprint}.pdf"
+        # Subir a Supabase
         url_pdf = subir_pdf_supabase(
             ruta_pdf,
             nombre_archivo
-        )
+            )
 
         # 7. Limpieza: Eliminar el archivo PDF local temporal para liberar espacio en el entorno
         if os.path.exists(ruta_pdf):
@@ -146,8 +150,12 @@ def generar_pdfs_sprint(iteration_path: str):
                     datos_requerimiento
                 )
 
-                # Nombre del archivo
-                nombre_archivo = f"HU_{id_hu}.pdf"
+                nombre_sprint = (
+                    iteration_path.split("\\")[-1]
+                    .replace(" ", "_")
+                    )
+
+                nombre_archivo = f"HU_{id_hu}_{nombre_sprint}.pdf"
 
                 # Subir a Supabase
                 url_pdf = subir_pdf_supabase(
@@ -189,43 +197,59 @@ def generar_pdfs_sprint(iteration_path: str):
 
 @app.get("/historial")
 def obtener_historial():
-    """Devuelve la lista de PDFs generados ordenados desde el más reciente."""
+    """
+    Devuelve la lista de PDFs generados ordenados desde el más reciente.
+    """
     try:
         # Listar todos los archivos dentro del bucket configurado
         archivos = supabase_client.storage.from_(BUCKET_NAME).list()
-        
+
         historial = []
 
         for i, archivo in enumerate(archivos):
-            
+
             nombre = archivo.get("name")
 
-            # Procesar únicamente archivos con extensión .pdf
+            # Procesar únicamente archivos PDF
             if nombre and nombre.endswith(".pdf"):
-                
+
                 url_publica = (
                     supabase_client.storage
                     .from_(BUCKET_NAME)
                     .get_public_url(nombre)
                 )
 
-                # Intentar extraer el ID numérico de la HU basándose en el nombre del archivo
+                # Valores por defecto
+                id_hu = 0
+                sprint = ""
+
                 try:
-                    id_hu = int(
-                        nombre.replace("HU_", "").replace(".pdf", "")
-                    )
-                except ValueError:
-                    id_hu = 0
+                    # Ejemplo:
+                    # HU_30026_Sprint_11.pdf
+                    nombre_sin_extension = nombre.replace(".pdf", "")
+
+                    partes = nombre_sin_extension.split("_")
+
+                    # ["HU", "30026", "Sprint", "11"]
+
+                    id_hu = int(partes[1])
+
+                    if len(partes) >= 4:
+                        sprint = f"{partes[2]} {partes[3]}"
+
+                except (ValueError, IndexError):
+                    pass
 
                 historial.append({
                     "id": i + 1,
                     "idHu": id_hu,
+                    "sprint": sprint,
                     "nombre": nombre,
-                    "fecha": archivo.get("created_at", "Fecha desconocida")[:10],  # Formato YYYY-MM-DD
+                    "fecha": archivo.get("created_at", "Fecha desconocida")[:10],
                     "url_archivo": url_publica
                 })
 
-        # Retornamos la lista invertida [::-1] para mostrar primero los últimos creados
+        # Mostrar primero los más recientes
         return historial[::-1]
 
     except Exception as e:
@@ -234,9 +258,7 @@ def obtener_historial():
             status_code=500,
             detail=f"Error al obtener el historial de Supabase: {str(e)}"
         )
-
-from fastapi import HTTPException
-
+        
 @app.delete("/historial/{nombre_archivo}")
 def eliminar_pdf(nombre_archivo: str):
 
