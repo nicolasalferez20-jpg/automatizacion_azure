@@ -767,7 +767,8 @@ def generate_pdf(
         ],
         [
             p("Mecanismo de comprobación de integridad de los datos", styles
-            ),p("", styles
+            ),p("•	AES (Advanced Encryption Standard).<br/>"
+                "•	SHA-256 ", styles
               )
             # p(resultado_seguridad["integridad"], styles
             # )
