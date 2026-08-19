@@ -150,12 +150,12 @@ def generar_pdfs_sprint(iteration_path: str):
                     datos_requerimiento
                 )
 
-                nombre_sprint = (
-                    iteration_path.split("\\")[-1]
-                    .replace(" ", "_")
-                    )
+                #nombre_sprint = (
+                    #iteration_path.split("\\")[-1]
+                    #.replace(" ", "_")
+                    #)
 
-                nombre_archivo = f"HU_{id_hu}_{nombre_sprint}.pdf"
+                nombre_archivo = f"Historia_Usuario_Proyecto_Rummi_{id_hu}.pdf"
 
                 # Subir a Supabase
                 url_pdf = subir_pdf_supabase(
