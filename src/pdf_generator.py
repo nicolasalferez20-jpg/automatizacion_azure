@@ -494,19 +494,23 @@ def generate_pdf(
     # ==================================================
     
     complejidad = work_item["fields"].get(
-    "Microsoft.VSTS.Common.Risk",
-    ""
-    )
+        "Microsoft.VSTS.Common.Risk",
+        "")
+    
     complejidad_texto = {
-    "1 - High": "Alta",
-    "2 - Medium": "Media",
-    "3 - Low": "Baja"
+        "1 - High": "Alta",
+        "2 - Medium": "Media",
+        "3 - Low": "Baja"
     }.get(complejidad, "N/A")
 
     estimacion = work_item["fields"].get(
         "Microsoft.VSTS.Scheduling.StoryPoints",
         ""
     )
+    if estimacion not in ("", None):
+        estimacion = int(estimacion)
+    else:
+        estimacion = "N/A"
 
     tabla89 = Table(
         [
@@ -998,21 +1002,21 @@ def generate_pdf(
             [
                 p("Linda Daniela Corchuelo Pachon", styles),
                 p("Analista de requerimientos Junior Nivel 3", styles),
-                "Desarrollo",
+                "Tecnología",
                 "",
                 ""
                 ],
             [
                 p("Eduin Fabian Ordonez Parra", styles),
                 p("Product Manager Specialist", styles),
-                "Desarrollo",
+                "Tecnología",
                 "",
                 ""
                 ],
             [
                 p("Carlos Alberto Rodriguez Sanchez", styles),
                 p("Líder Técnico Nivel 1", styles),
-                "Desarrollo",
+                "Tecnología",
                 "",
                 ""
                 ]
