@@ -592,20 +592,7 @@ def generate_pdf(
         "Custom.Contexto",
         ""
     ))
-    requerimientos = (
-        work_item["fields"].get(
-        "Custom.Requerimientos",
-        ""
-    ))
-    criterios = clean_html(
-        work_item["fields"].get(
-        "Microsoft.VSTS.Common.AcceptanceCriteria",
-        ""
-    )
-    )
-    # Enumerar requerimientos
-    requerimientos_numerados = organizar_requerimientos(requerimientos)
-
+    
     descripcion_hu = f"""
      <b>Como:</b><br/>
       {como}
@@ -621,11 +608,7 @@ def generate_pdf(
 
      <b>Cuando:</b><br/>
      {contexto}
-     <br/><br/>
-
-     <b>Requerimientos:</b><br/>
-     {requerimientos_numerados}
-    """
+     """
 
     descripcion_parrafo = Paragraph(
     descripcion_hu,
@@ -657,21 +640,38 @@ def generate_pdf(
             "12. Fuera de alcance"
         )
     )
- # datos ficticios
+
+    requerimientos = clean_html(
+        work_item["fields"].get(
+            "Custom.Requerimientos",
+            ""
+        )
+    )
+
+    requerimientos_numerados = organizar_requerimientos(
+        requerimientos
+    )
+
     tabla12_fuera = Table(
         [[
-            "N/A."
-            ""
+            Paragraph(
+                requerimientos_numerados
+                if requerimientos_numerados
+                else "N/A.",
+                styles["BodyText"]
+            )
         ]],
-        colWidths=[18 * cm],
-        rowHeights=[3 * cm]
+        colWidths=[18 * cm]
     )
 
     tabla12_fuera.setStyle(
         TableStyle([
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE")
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 8),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+            ("TOPPADDING", (0, 0), (-1, -1), 8),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 8)
         ])
     )
 
