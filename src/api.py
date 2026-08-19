@@ -81,7 +81,7 @@ def crear_pdf(id_hu: int):
             .replace(" ", "_")
             )
         # Construir el nombre del archivo
-        nombre_archivo = f"HU_{id_hu}_{nombre_sprint}.pdf"
+        nombre_archivo = f"Historia_Usuario_Proyecto_Rummi_{id_hu}.pdf"
         # Subir a Supabase
         url_pdf = subir_pdf_supabase(
             ruta_pdf,
@@ -93,6 +93,7 @@ def crear_pdf(id_hu: int):
             os.remove(ruta_pdf)
 
         return {
+            "nombre_sprint": nombre_sprint,
             "mensaje": "PDF generado correctamente y guardado en Supabase Storage",
             "archivo": nombre_archivo,
             "url_archivo": url_pdf,
@@ -150,10 +151,10 @@ def generar_pdfs_sprint(iteration_path: str):
                     datos_requerimiento
                 )
 
-                #nombre_sprint = (
-                    #iteration_path.split("\\")[-1]
-                    #.replace(" ", "_")
-                    #)
+                nombre_sprint = (
+                    iteration_path.split("\\")[-1]
+                    .replace(" ", "_")
+                    )
 
                 nombre_archivo = f"Historia_Usuario_Proyecto_Rummi_{id_hu}.pdf"
 
@@ -182,6 +183,7 @@ def generar_pdfs_sprint(iteration_path: str):
 
         return {
             "mensaje": f"Se generaron {len(pdfs_generados)} PDFs.",
+            "nombre_sprint": nombre_sprint,
             "sprint": iteration_path,
             "total_historias": total_historias_sprint,
             "pdfs_generados": pdfs_generados,
