@@ -641,7 +641,7 @@ def generate_pdf(
         )
     )
 
-    requerimientos = clean_html(
+    requerimientos =(
         work_item["fields"].get(
             "Custom.Requerimientos",
             ""
