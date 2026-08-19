@@ -234,10 +234,10 @@ def obtener_historial():
 
                     # ["HU", "30026", "Sprint", "11"]
 
-                    id_hu = int(partes[1])
+                    id_hu = int(partes[4])
 
-                    if len(partes) >= 4:
-                        sprint = f"{partes[2]} {partes[3]}"
+                    if len(partes) >= 6:
+                        sprint = f"{partes[5]} {partes[6]}"
 
                 except (ValueError, IndexError):
                     pass
