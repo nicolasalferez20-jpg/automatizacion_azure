@@ -197,6 +197,52 @@ def generar_pdfs_sprint(iteration_path: str):
             detail=str(e)
         )
 
+@app.get("/obtener-sprint/{id_hu}")
+def obtener_sprint(id_hu: int):
+    """
+    Obtiene el Sprint al que pertenece una Historia de Usuario
+    consultando Azure DevOps.
+    """
+
+    try:
+        # Obtener la Historia de Usuario desde Azure DevOps
+        work_item = get_work_item(id_hu)
+
+        # Obtener los campos de la HU
+        fields = work_item.get("fields", {})
+
+        # Obtener el Iteration Path
+        iteration_path = fields.get(
+            "System.IterationPath",
+            ""
+        )
+
+        if not iteration_path:
+            raise HTTPException(
+                status_code=404,
+                detail=f"La HU {id_hu} no tiene un Iteration Path asignado."
+            )
+
+        # Obtener únicamente el nombre del Sprint
+        nombre_sprint = iteration_path.split("\\")[-1]
+
+        return {
+            "id_hu": id_hu,
+            "iteration_path": iteration_path,
+            "nombre_sprint": nombre_sprint
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        traceback.print_exc()
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al consultar Azure DevOps: {str(e)}"
+        )
+        
 @app.get("/historial")
 def obtener_historial():
     """
