@@ -21,7 +21,7 @@ from src.supabase_client import (
 
 app = FastAPI(
     title="Azure DevOps Automation API",
-    description="API para procesar historias de usuario, resolver relaciones y exportar a PDF vía Supabase",
+    description="API para procesar historias de usuario,generar HU por sprint y exportar a PDF vía Supabase",
     version="1.1.0"
 )
 
@@ -93,7 +93,6 @@ def crear_pdf(id_hu: int):
             os.remove(ruta_pdf)
 
         return {
-            "nombre_sprint": nombre_sprint,
             "mensaje": "PDF generado correctamente y guardado en Supabase Storage",
             "archivo": nombre_archivo,
             "url_archivo": url_pdf,
@@ -183,7 +182,6 @@ def generar_pdfs_sprint(iteration_path: str):
 
         return {
             "mensaje": f"Se generaron {len(pdfs_generados)} PDFs.",
-            "nombre_sprint": nombre_sprint,
             "sprint": iteration_path,
             "total_historias": total_historias_sprint,
             "pdfs_generados": pdfs_generados,
@@ -247,9 +245,11 @@ def obtener_sprint(id_hu: int):
 def obtener_historial():
     """
     Devuelve la lista de PDFs generados ordenados desde el más reciente.
+    El Sprint se obtiene consultando Azure DevOps mediante el ID de la HU.
     """
+
     try:
-        # Listar todos los archivos dentro del bucket configurado
+        # Listar todos los archivos dentro del bucket
         archivos = supabase_client.storage.from_(BUCKET_NAME).list()
 
         historial = []
@@ -259,52 +259,100 @@ def obtener_historial():
             nombre = archivo.get("name")
 
             # Procesar únicamente archivos PDF
-            if nombre and nombre.endswith(".pdf"):
+            if not nombre or not nombre.lower().endswith(".pdf"):
+                continue
 
-                url_publica = (
-                    supabase_client.storage
-                    .from_(BUCKET_NAME)
-                    .get_public_url(nombre)
+            # URL pública del archivo
+            url_publica = (
+                supabase_client.storage
+                .from_(BUCKET_NAME)
+                .get_public_url(nombre)
+            )
+
+            # Valores por defecto
+            id_hu = 0
+            sprint = ""
+
+            # =====================================================
+            # 1. EXTRAER ID DE LA HU DESDE EL NOMBRE DEL PDF
+            # =====================================================
+
+            try:
+                # Ejemplo:
+                # Historia_Usuario_Proyecto_Rummi_34139.pdf
+
+                nombre_sin_extension = nombre.rsplit(".", 1)[0]
+
+                partes = nombre_sin_extension.split("_")
+
+                # El ID de la HU está al final
+                id_hu = int(partes[-1])
+
+            except (ValueError, IndexError):
+                print(
+                    f"No fue posible obtener el ID de la HU "
+                    f"desde el archivo: {nombre}"
                 )
 
-                # Valores por defecto
-                id_hu = 0
-                sprint = ""
+            # =====================================================
+            # 2. CONSULTAR AZURE DEVOPS
+            # =====================================================
 
+            if id_hu:
                 try:
-                    # Ejemplo:
-                    # HU_30026_Sprint_11.pdf
-                    nombre_sin_extension = nombre.replace(".pdf", "")
 
-                    partes = nombre_sin_extension.split("_")
+                    work_item = get_work_item(id_hu)
 
-                    # ["HU", "30026", "Sprint", "11"]
+                    fields = work_item.get("fields", {})
 
-                    id_hu = int(partes[4])
+                    # Obtener Iteration Path
+                    iteration_path = fields.get(
+                        "System.IterationPath",
+                        ""
+                    )
 
-                    if len(partes) >= 6:
-                        sprint = f"{partes[5]} {partes[6]}"
+                    # Obtener nombre del Sprint
+                    if iteration_path:
+                        sprint = iteration_path.split("\\")[-1]
 
-                except (ValueError, IndexError):
-                    pass
+                except Exception as e:
+                    # Si Azure DevOps falla, NO detener el historial
+                    print(
+                        f"No fue posible obtener el Sprint "
+                        f"de la HU {id_hu}: {str(e)}"
+                    )
 
-                historial.append({
-                    "id": i + 1,
-                    "idHu": id_hu,
-                    "sprint": sprint,
-                    "nombre": nombre,
-                    "fecha": archivo.get("created_at", "Fecha desconocida")[:10],
-                    "url_archivo": url_publica
-                })
+                    sprint = ""
+
+            # =====================================================
+            # 3. AGREGAR INFORMACIÓN AL HISTORIAL
+            # =====================================================
+
+            historial.append({
+                "id": i + 1,
+                "idHu": id_hu,
+                "sprint": sprint,
+                "nombre": nombre,
+                "fecha": archivo.get(
+                    "created_at",
+                    "Fecha desconocida"
+                )[:10],
+                "url_archivo": url_publica
+            })
 
         # Mostrar primero los más recientes
         return historial[::-1]
 
     except Exception as e:
+
         traceback.print_exc()
+
         raise HTTPException(
             status_code=500,
-            detail=f"Error al obtener el historial de Supabase: {str(e)}"
+            detail=(
+                "Error al obtener el historial de Supabase: "
+                f"{str(e)}"
+            )
         )
         
 @app.delete("/historial/{nombre_archivo}")
