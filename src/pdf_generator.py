@@ -434,11 +434,11 @@ def generate_pdf(
     tabla45 = Table(
         [
             [
-                "4. Tipo de requerimiento (Negocio, Tecnico, Soporte)",
+                "4. Tipo de requerimiento (Negocio, Técnico, Soporte)",
                 "5. Total historias de usuario"
             ],
             [
-                "Tecnico",
+                "Técnico",
                 str(total_historias_sprint)
             ]
         ],
@@ -971,7 +971,7 @@ def generate_pdf(
             [
                 "Linda Daniela Corchuelo Pachon",
                 fecha_formateada,
-                "Creacion",
+                "Creación",
                 "1.0"
             ]
         ],
