@@ -96,53 +96,60 @@ def organizar_requerimientos(html):
     soup = BeautifulSoup(html, "html.parser")
     resultado = []
     contador = 1
-    
-    # Buscamos todos los bloques que potencialmente contienen texto
-    elementos = soup.find_all(["div", "li"])
-    
+
+    # Buscamos los bloques principales (listas, párrafos o divs contenedores)
+    # Ignoramos divs o ps que solo contengan espacios en blanco
+    bloques = soup.find_all(["ul", "ol", "p", "div"], recursive=True)
     procesados = set()
 
-    for elemento in elementos:
-        if elemento in procesados:
+    for bloque in bloques:
+        if bloque in procesados:
             continue
-            
-        # 1. Averiguar si es una sublista (si tiene un 'ul' o 'ol' entre sus ancestros)
-        es_sublista = elemento.find_parent(["ul", "ol"]) is not None
-        
-        # 2. Limpiar el texto del elemento actual sin los textos de sus hijos anidados
-        # para evitar duplicación de texto en el mismo nodo
-        elemento_copia = BeautifulSoup(str(elemento), "html.parser").find(elemento.name)
-        
-        # Quitamos sublistas e hijos grandes de la copia para extraer solo el texto de este nivel
-        for hijo_molesto in elemento_copia.find_all(["ul", "ol", "div", "li"]):
-            hijo_molesto.decompose()
-            
-        texto_limpio = elemento_copia.get_text(" ", strip=True)
-        
-        if not texto_limpio:
+
+        # Evitamos procesar un contenedor si está dentro de otro ya analizado
+        if any(ancestro in procesados for ancestro in bloque.parents):
             continue
-            
-        # 3. Clasificar y agregar al resultado
-        if es_sublista:
-            resultado.append(f"&nbsp;&nbsp;&nbsp;• {texto_limpio}")
-            # Marcamos este elemento como procesado
-            procesados.add(elemento)
-        else:
-            resultado.append(f"{contador}. {texto_limpio}")
-            contador += 1
-            # Marcamos este elemento como procesado
-            procesados.add(elemento)
-            
-            # Si este requerimiento principal tenía una lista interna, 
-            # procesamos sus 'li' de una vez para mantener el orden visual impecable
-            lista_interna = elemento.find(["ul", "ol"])
-            if lista_interna:
-                for sub_li in lista_interna.find_all("li"):
-                    if sub_li not in procesados:
+
+        # CASO 1: Es una lista (<ul> o <ol>)
+        if bloque.name in ["ul", "ol"]:
+            procesados.add(bloque)
+            elementos_li = bloque.find_all("li", recursive=False)
+
+            # Si la lista contiene ítems 'li'
+            for li in elementos_li:
+                procesados.add(li)
+
+                # Clonamos para extraer texto limpio sin sublistas internas
+                li_copia = BeautifulSoup(str(li), "html.parser").find("li")
+                for sublista in li_copia.find_all(["ul", "ol"]):
+                    sublista.decompose()
+
+                texto_li = li_copia.get_text(" ", strip=True)
+
+                if texto_li:
+                    resultado.append(f"{contador}. {texto_li}")
+                    contador += 1
+
+                # Si el 'li' tiene sublistas internas, las formateamos con viñetas
+                for sublista in li.find_all(["ul", "ol"]):
+                    procesados.add(sublista)
+                    for sub_li in sublista.find_all("li"):
+                        procesados.add(sub_li)
                         txt_sub = sub_li.get_text(" ", strip=True)
                         if txt_sub:
                             resultado.append(f"&nbsp;&nbsp;&nbsp;• {txt_sub}")
-                        procesados.add(sub_li)
+
+        # CASO 2: Es un párrafo o div con texto directo (fuera de listas)
+        else:
+            # Si el bloque contiene una lista dentro, dejamos que el CASO 1 la procese
+            if bloque.find(["ul", "ol"]):
+                continue
+
+            texto_bloque = bloque.get_text(" ", strip=True)
+            if texto_bloque:
+                resultado.append(f"{contador}. {texto_bloque}")
+                contador += 1
+                procesados.add(bloque)
 
     return "<br/>".join(resultado)
 
