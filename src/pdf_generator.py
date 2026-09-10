@@ -92,6 +92,28 @@ def organizar_criterios(html):
 
     return "<br/>".join(resultado)
 
+def organizar_contexto(html):
+    if not html:
+        return ""
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    BLOCK_TAGS = [
+        "div", "p", "li", "h1", "h2", "h3", "h4", "h5", "h6",
+        "tr", "blockquote", "section", "article", "header", "footer",
+        "br"
+    ]
+
+    for tag in soup.find_all(BLOCK_TAGS):
+        tag.insert_before("\n")
+
+    text = soup.get_text()
+
+    lines = [line.strip() for line in text.split("\n")]
+    lines = [line for line in lines if line]
+
+    return "<br/>".join(lines)
+
 def organizar_requerimientos(html):
     soup = BeautifulSoup(html, "html.parser")
     resultado = []
@@ -598,7 +620,7 @@ def generate_pdf(
         ""
     )
     )
-    contexto = clean_html(
+    contexto = organizar_contexto(
     work_item["fields"].get(
         "Custom.Contexto",
         ""
