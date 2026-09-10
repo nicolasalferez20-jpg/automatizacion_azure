@@ -175,7 +175,7 @@ def generate_docx(
         run_sub.font.size = Pt(11)
         run_sub.font.name = "Calibri"
 
-        info_table = header.add_table(rows=4, cols=2)
+        info_table = header.add_table(rows=4, cols=2, width=Cm(5.5))
         info_table.alignment = WD_TABLE_ALIGNMENT.RIGHT
 
         info_data = [
