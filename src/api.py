@@ -250,6 +250,88 @@ def generar_pdfs_sprint(iteration_path: str):
             detail=str(e)
         )
 
+
+@app.get("/generar-docx-sprint")
+def generar_docx_sprint(iteration_path: str):
+    """
+    Genera un documento Word (.docx) para todas las Historias de Usuario de un Sprint.
+    """
+
+    try:
+
+        # Obtener todas las HU del Sprint
+        historias = get_user_stories_by_sprint(iteration_path)
+
+        if not historias:
+            raise HTTPException(
+                status_code=404,
+                detail="No se encontraron Historias de Usuario para el Sprint indicado."
+            )
+
+        total_historias_sprint = len(historias)
+
+        docxs_generados = []
+        errores = []
+
+        # Recorrer todas las HU
+        for id_hu in historias:
+
+            try:
+
+                # Obtener la HU
+                work_item = get_work_item(id_hu)
+
+                # Obtener las relaciones
+                datos_requerimiento = get_work_item_relations_data(work_item)
+
+                # Generar el DOCX
+                ruta_docx = generate_docx(
+                    work_item,
+                    total_historias_sprint,
+                    datos_requerimiento
+                )
+
+                nombre_archivo = f"Historia_Usuario_Proyecto_Rummi_{id_hu}.docx"
+
+                # Subir a Supabase
+                url_docx = subir_docx_supabase(
+                    ruta_docx,
+                    nombre_archivo
+                )
+
+                # Eliminar el DOCX temporal
+                if os.path.exists(ruta_docx):
+                    os.remove(ruta_docx)
+
+                docxs_generados.append({
+                    "id_hu": id_hu,
+                    "archivo": nombre_archivo,
+                    "url_archivo": url_docx
+                })
+
+            except Exception as e:
+
+                errores.append({
+                    "id_hu": id_hu,
+                    "error": str(e)
+                })
+
+        return {
+            "mensaje": f"Se generaron {len(docxs_generados)} DOCXs.",
+            "sprint": iteration_path,
+            "total_historias": total_historias_sprint,
+            "docxs_generados": docxs_generados,
+            "errores": errores
+        }
+
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
+
 @app.get("/obtener-sprint/{id_hu}")
 def obtener_sprint(id_hu: int):
     """
