@@ -194,7 +194,7 @@ def generate_docx(
         set_cell_borders(cell_info)
 
         # Crear tabla interna para metadata
-        info_table = cell_info.add_table(rows=4, cols=2, width=Cm(5.5))
+        info_table = cell_info.add_table(rows=4, cols=2)
 
         info_data = [
             ("Código", "PTI-DS-FR-84"),
