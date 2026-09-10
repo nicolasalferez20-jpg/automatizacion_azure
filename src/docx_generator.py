@@ -125,12 +125,11 @@ def titulo_seccion(doc, texto):
 
     p = cell.paragraphs[0]
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    set_paragraph_spacing(p, before=30, after=30)
     run = p.add_run(texto)
     run.bold = True
     run.font.size = Pt(11)
     run.font.name = "Calibri"
-
-    doc.add_paragraph()
 
 
 def generate_docx(
@@ -157,26 +156,45 @@ def generate_docx(
     if Path(logo_path).exists():
         header = section.header
         header.is_linked_to_previous = False
-        header_para = header.paragraphs[0]
-        header_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run = header_para.add_run()
-        run.add_picture(logo_path, width=Cm(3.5), height=Cm(2.5))
 
-        title_para = header.add_paragraph()
-        title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run_title = title_para.add_run("HISTORIAS DE USUARIO")
-        run_title.bold = True
-        run_title.font.size = Pt(14)
-        run_title.font.name = "Calibri"
+        # Crear tabla principal de encabezado (1 fila x 3 columnas)
+        header_table = header.add_table(rows=1, cols=3, width=Cm(18))
+        header_table.alignment = WD_TABLE_ALIGNMENT.CENTER
 
-        subtitle_para = header.add_paragraph()
-        subtitle_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        run_sub = subtitle_para.add_run("Desarrollo")
-        run_sub.font.size = Pt(11)
-        run_sub.font.name = "Calibri"
+        # Columna 1: Logo (4cm)
+        cell_logo = header_table.cell(0, 0)
+        cell_logo.width = Cm(4)
+        set_cell_borders(cell_logo)
+        p_logo = cell_logo.paragraphs[0]
+        p_logo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run_logo = p_logo.add_run()
+        run_logo.add_picture(logo_path, width=Cm(3.5), height=Cm(2.5))
 
-        info_table = header.add_table(rows=4, cols=2, width=Cm(5.5))
-        info_table.alignment = WD_TABLE_ALIGNMENT.RIGHT
+        # Columna 2: Título (8.5cm)
+        cell_titulo = header_table.cell(0, 1)
+        cell_titulo.width = Cm(8.5)
+        set_cell_borders(cell_titulo)
+        p_titulo = cell_titulo.paragraphs[0]
+        p_titulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        set_paragraph_spacing(p_titulo, before=30, after=30)
+        run_titulo = p_titulo.add_run("HISTORIAS DE USUARIO")
+        run_titulo.bold = True
+        run_titulo.font.size = Pt(14)
+        run_titulo.font.name = "Calibri"
+
+        p_subtitulo = cell_titulo.add_paragraph()
+        p_subtitulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run_subtitulo = p_subtitulo.add_run("Desarrollo")
+        run_subtitulo.font.size = Pt(11)
+        run_subtitulo.font.name = "Calibri"
+
+        # Columna 3: Metadata (5.5cm)
+        cell_info = header_table.cell(0, 2)
+        cell_info.width = Cm(5.5)
+        set_cell_borders(cell_info)
+
+        # Crear tabla interna para metadata
+        info_table = cell_info.add_table(rows=4, cols=2, width=Cm(5.5))
 
         info_data = [
             ("Código", "PTI-DS-FR-84"),
@@ -208,6 +226,13 @@ def generate_docx(
 
     table_fecha = doc.add_table(rows=2, cols=4)
     table_fecha.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+    # Establecer anchos de columna: 2cm, 2cm, 3cm, 11cm
+    for row in table_fecha.rows:
+        row.cells[0].width = Cm(2)
+        row.cells[1].width = Cm(2)
+        row.cells[2].width = Cm(3)
+        row.cells[3].width = Cm(11)
 
     cell_fecha_label = table_fecha.cell(0, 0).merge(table_fecha.cell(0, 2))
     agregar_celda_contenido(cell_fecha_label, "FECHA", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
@@ -278,6 +303,11 @@ def generate_docx(
     table12 = doc.add_table(rows=2, cols=2)
     table12.alignment = WD_TABLE_ALIGNMENT.CENTER
 
+    # Establecer anchos de columna: 13cm, 5cm
+    for row in table12.rows:
+        row.cells[0].width = Cm(13)
+        row.cells[1].width = Cm(5)
+
     cell_1_label = table12.cell(0, 0)
     agregar_celda_contenido(cell_1_label, "1. Nombre del requerimiento", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
     set_cell_shading(cell_1_label, "18E0C4")
@@ -324,6 +354,11 @@ def generate_docx(
     table45 = doc.add_table(rows=2, cols=2)
     table45.alignment = WD_TABLE_ALIGNMENT.CENTER
 
+    # Establecer anchos de columna: 9cm, 9cm
+    for row in table45.rows:
+        row.cells[0].width = Cm(9)
+        row.cells[1].width = Cm(9)
+
     cell_4_label = table45.cell(0, 0)
     agregar_celda_contenido(cell_4_label, "4. Tipo de requerimiento (Negocio, Técnico, Soporte)", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
     set_cell_shading(cell_4_label, "18E0C4")
@@ -357,6 +392,11 @@ def generate_docx(
 
     table67 = doc.add_table(rows=2, cols=2)
     table67.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+    # Establecer anchos de columna: 9cm, 9cm
+    for row in table67.rows:
+        row.cells[0].width = Cm(9)
+        row.cells[1].width = Cm(9)
 
     cell_6_label = table67.cell(0, 0)
     agregar_celda_contenido(cell_6_label, "6. Prioridad (Alta, Media o Baja)", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
@@ -396,6 +436,11 @@ def generate_docx(
 
     table89 = doc.add_table(rows=2, cols=2)
     table89.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+    # Establecer anchos de columna: 9cm, 9cm
+    for row in table89.rows:
+        row.cells[0].width = Cm(9)
+        row.cells[1].width = Cm(9)
 
     cell_8_label = table89.cell(0, 0)
     agregar_celda_contenido(cell_8_label, "8. Complejidad (Alta, Media o Baja)", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
@@ -598,6 +643,11 @@ def generate_docx(
 
     table14 = doc.add_table(rows=5, cols=2)
     table14.alignment = WD_TABLE_ALIGNMENT.CENTER
+
+    # Establecer anchos de columna: 7cm, 11cm
+    for row in table14.rows:
+        row.cells[0].width = Cm(7)
+        row.cells[1].width = Cm(11)
 
     cell_criterio_header = table14.cell(0, 0)
     agregar_celda_contenido(cell_criterio_header, "Criterio", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
