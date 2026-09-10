@@ -87,3 +87,43 @@ def eliminar_pdf_supabase(nombre_archivo: str):
         print(e)
 
         return False
+
+
+def subir_docx_supabase(ruta_docx: str, nombre_archivo: str) -> str:
+    """
+    Sube un DOCX a Supabase Storage.
+    Si el archivo ya existe, lo reemplaza automáticamente.
+    """
+
+    with open(ruta_docx, "rb") as f:
+        file_data = f.read()
+
+    bucket = supabase_client.storage.from_(BUCKET_NAME)
+
+    try:
+        bucket.upload(
+            path=nombre_archivo,
+            file=file_data,
+            file_options={
+                "content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            }
+        )
+        print(f"DOCX subido correctamente: {nombre_archivo}")
+
+    except Exception as e:
+        print("El archivo ya existe. Intentando actualizar...")
+        mensaje = str(e).lower()
+
+        if "already exists" in mensaje or "duplicate" in mensaje or "409" in mensaje:
+            bucket.update(
+                path=nombre_archivo,
+                file=file_data,
+                file_options={
+                    "content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                }
+            )
+            print(f"DOCX actualizado correctamente: {nombre_archivo}")
+        else:
+            raise
+
+    return bucket.get_public_url(nombre_archivo)

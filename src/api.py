@@ -12,9 +12,11 @@ from src.azure_client import (
     get_sprints
 )
 from src.pdf_generator import generate_pdf
+from src.docx_generator import generate_docx
 from src.supabase_client import (
     eliminar_pdf_supabase,
     subir_pdf_supabase,
+    subir_docx_supabase,
     supabase_client,
     BUCKET_NAME
 )
@@ -105,6 +107,59 @@ def crear_pdf(id_hu: int):
             status_code=500,
             detail=str(e)
         )
+
+
+@app.get("/generar-docx/{id_hu}")
+def crear_docx(id_hu: int):
+    """
+    Endpoint para generar documento Word (.docx):
+    1. Consulta la HU en Azure DevOps.
+    2. Identifica su Sprint y calcula el total de HUs del mismo.
+    3. Extrae las relaciones (Predecesor y Relacionados).
+    4. Genera el DOCX y lo sube a Supabase Storage.
+    """
+    try:
+        # 1. Obtener la Historia de Usuario
+        work_item = get_work_item(id_hu)
+
+        # 2. Obtener el Sprint (IterationPath)
+        iteration_path = work_item["fields"]["System.IterationPath"]
+
+        # 3. Obtener el total de historias de usuario del Sprint
+        total_historias_sprint = get_total_user_stories_by_sprint(iteration_path)
+
+        # 4. Obtener las relaciones
+        datos_requerimiento = get_work_item_relations_data(work_item)
+
+        # 5. Generar el DOCX
+        ruta_docx = generate_docx(
+            work_item,
+            total_historias_sprint,
+            datos_requerimiento
+        )
+
+        # 6. Subir a Supabase
+        nombre_archivo = f"Historia_Usuario_Proyecto_Rummi_{id_hu}.docx"
+        url_docx = subir_docx_supabase(ruta_docx, nombre_archivo)
+
+        # 7. Limpiar archivo temporal
+        if os.path.exists(ruta_docx):
+            os.remove(ruta_docx)
+
+        return {
+            "mensaje": "DOCX generado correctamente y guardado en Supabase Storage",
+            "archivo": nombre_archivo,
+            "url_archivo": url_docx,
+            "total_historias_sprint": total_historias_sprint
+        }
+
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
+
 
 @app.get("/sprints")
 def obtener_sprints():
