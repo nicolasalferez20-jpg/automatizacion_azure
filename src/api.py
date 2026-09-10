@@ -395,8 +395,11 @@ def obtener_historial():
 
             nombre = archivo.get("name")
 
-            # Procesar únicamente archivos PDF
-            if not nombre or not nombre.lower().endswith(".pdf"):
+            # Procesar únicamente archivos PDF y DOCX
+            if not nombre or not (
+                nombre.lower().endswith(".pdf")
+                or nombre.lower().endswith(".docx")
+            ):
                 continue
 
             # URL pública del archivo
@@ -465,11 +468,15 @@ def obtener_historial():
             # 3. AGREGAR INFORMACIÓN AL HISTORIAL
             # =====================================================
 
+            # Determinar tipo de archivo
+            tipo = "DOCX" if nombre.lower().endswith(".docx") else "PDF"
+
             historial.append({
                 "id": i + 1,
                 "idHu": id_hu,
                 "sprint": sprint,
                 "nombre": nombre,
+                "tipo": tipo,
                 "fecha": archivo.get(
                     "created_at",
                     "Fecha desconocida"
@@ -500,9 +507,9 @@ def eliminar_pdf(nombre_archivo: str):
     if not eliminado:
         raise HTTPException(
             status_code=404,
-            detail="No fue posible eliminar el PDF"
+            detail="No fue posible eliminar el archivo"
         )
 
     return {
-        "mensaje": "PDF eliminado correctamente"
+        "mensaje": "Archivo eliminado correctamente"
     }
