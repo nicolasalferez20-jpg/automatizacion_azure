@@ -60,7 +60,7 @@ def organizar_criterios(html):
 
     for tag in soup.find_all(["b", "strong", "li"]):
 
-        if tag.name in ["b", "strong"]:
+        if tag.name in ["b", "strong"] and not tag.find_parent("li"):
 
             contador += 1
             dentro_de_criterio = True
@@ -933,7 +933,7 @@ def generate_pdf(
     tabla17.setStyle(
         TableStyle([
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE")
         ])
     )
