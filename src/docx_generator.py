@@ -197,6 +197,12 @@ def generate_docx(
 
         # Crear tabla interna para metadata
         info_table = cell_info.add_table(rows=4, cols=2)
+        info_table.allow_autofit = False
+
+        # Establecer anchos de columna: 2.5cm + 3cm = 5.5cm
+        for row in info_table.rows:
+            row.cells[0].width = Cm(2.5)
+            row.cells[1].width = Cm(3)
 
         info_data = [
             ("Código", "PTI-DS-FR-84"),
