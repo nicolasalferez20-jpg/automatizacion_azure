@@ -157,13 +157,20 @@ def generate_docx(
         header = section.header
         header.is_linked_to_previous = False
 
-        # Crear tabla principal de encabezado (1 fila x 3 columnas)
-        header_table = header.add_table(rows=1, cols=3, width=Cm(18))
+        # Crear tabla principal de encabezado (4 filas x 4 columnas)
+        header_table = header.add_table(rows=4, cols=4, width=Cm(18))
         header_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+        header_table.allow_autofit = False
 
-        # Columna 1: Logo (4cm)
-        cell_logo = header_table.cell(0, 0)
-        cell_logo.width = Cm(4)
+        # Establecer anchos de columna: 4cm, 8.5cm, 2.5cm, 3cm
+        for row in header_table.rows:
+            row.cells[0].width = Cm(4)
+            row.cells[1].width = Cm(8.5)
+            row.cells[2].width = Cm(2.5)
+            row.cells[3].width = Cm(3)
+
+        # Columna 1: Logo (4cm) - fusionar filas 0-3
+        cell_logo = header_table.cell(0, 0).merge(header_table.cell(3, 0))
         set_cell_borders(cell_logo)
         set_cell_vertical_alignment(cell_logo, "center")
         p_logo = cell_logo.paragraphs[0]
@@ -171,9 +178,8 @@ def generate_docx(
         run_logo = p_logo.add_run()
         run_logo.add_picture(logo_path, width=Cm(3.5), height=Cm(2.5))
 
-        # Columna 2: Título (8.5cm)
-        cell_titulo = header_table.cell(0, 1)
-        cell_titulo.width = Cm(8.5)
+        # Columna 2: Título (8.5cm) - fusionar filas 0-1
+        cell_titulo = header_table.cell(0, 1).merge(header_table.cell(1, 1))
         set_cell_borders(cell_titulo)
         set_cell_vertical_alignment(cell_titulo, "center")
         p_titulo = cell_titulo.paragraphs[0]
@@ -184,26 +190,17 @@ def generate_docx(
         run_titulo.font.size = Pt(14)
         run_titulo.font.name = "Calibri"
 
-        p_subtitulo = cell_titulo.add_paragraph()
+        # Columna 2: Subtítulo (8.5cm) - fusionar filas 2-3
+        cell_subtitulo = header_table.cell(2, 1).merge(header_table.cell(3, 1))
+        set_cell_borders(cell_subtitulo)
+        set_cell_vertical_alignment(cell_subtitulo, "center")
+        p_subtitulo = cell_subtitulo.paragraphs[0]
         p_subtitulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
         run_subtitulo = p_subtitulo.add_run("Desarrollo")
         run_subtitulo.font.size = Pt(11)
         run_subtitulo.font.name = "Calibri"
 
-        # Columna 3: Metadata (5.5cm)
-        cell_info = header_table.cell(0, 2)
-        cell_info.width = Cm(5.5)
-        set_cell_borders(cell_info)
-
-        # Crear tabla interna para metadata
-        info_table = cell_info.add_table(rows=4, cols=2)
-        info_table.allow_autofit = False
-
-        # Establecer anchos de columna: 2.5cm + 3cm = 5.5cm
-        for row in info_table.rows:
-            row.cells[0].width = Cm(2.5)
-            row.cells[1].width = Cm(3)
-
+        # Datos de metadata (filas 0-3, columnas 2-3)
         info_data = [
             ("Código", "PTI-DS-FR-84"),
             ("Versión", "6"),
@@ -212,11 +209,13 @@ def generate_docx(
         ]
 
         for i, (label, value) in enumerate(info_data):
-            cell_label = info_table.cell(i, 0)
-            cell_value = info_table.cell(i, 1)
+            cell_label = header_table.cell(i, 2)
+            cell_value = header_table.cell(i, 3)
+
             set_cell_shading(cell_label, "F2F2F2")
             set_cell_borders(cell_label)
             set_cell_borders(cell_value)
+
             agregar_celda_contenido(cell_label, label, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, font_size=9)
             agregar_celda_contenido(cell_value, value, align=WD_ALIGN_PARAGRAPH.CENTER, font_size=9)
 
