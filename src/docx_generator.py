@@ -165,6 +165,7 @@ def generate_docx(
         cell_logo = header_table.cell(0, 0)
         cell_logo.width = Cm(4)
         set_cell_borders(cell_logo)
+        set_cell_vertical_alignment(cell_logo, "center")
         p_logo = cell_logo.paragraphs[0]
         p_logo.alignment = WD_ALIGN_PARAGRAPH.CENTER
         run_logo = p_logo.add_run()
@@ -174,6 +175,7 @@ def generate_docx(
         cell_titulo = header_table.cell(0, 1)
         cell_titulo.width = Cm(8.5)
         set_cell_borders(cell_titulo)
+        set_cell_vertical_alignment(cell_titulo, "center")
         p_titulo = cell_titulo.paragraphs[0]
         p_titulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
         set_paragraph_spacing(p_titulo, before=30, after=30)
@@ -211,6 +213,10 @@ def generate_docx(
             set_cell_borders(cell_value)
             agregar_celda_contenido(cell_label, label, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, font_size=9)
             agregar_celda_contenido(cell_value, value, align=WD_ALIGN_PARAGRAPH.CENTER, font_size=9)
+
+        # Agregar espacio entre encabezado y contenido
+        spacer_para = header.add_paragraph()
+        set_paragraph_spacing(spacer_para, before=0, after=200)
 
     # ==================================================
     # FECHA Y PROYECTO
