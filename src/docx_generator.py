@@ -169,9 +169,17 @@ def generate_docx(
             row.cells[2].width = Cm(2.5)
             row.cells[3].width = Cm(3)
 
-        # Columna 1: Logo (4cm)
-        cell_logo = header_table.cell(0, 0)
-        cell_logo.width = Cm(4)
+        # === FUSIONAR CELDES PRIMERO (sin aplicar bordes aún) ===
+
+        # Columna 1: Logo - fusionar filas 0-3
+        cell_logo = header_table.cell(0, 0).merge(header_table.cell(3, 0))
+
+        # Columna 2: Título + Subtítulo - fusionar filas 0-3
+        cell_titulo = header_table.cell(0, 1).merge(header_table.cell(3, 1))
+
+        # === APLICAR BORDES Y CONTENIDO DESPUÉS DE LAS FUSIONES ===
+
+        # Configurar celda del Logo
         set_cell_borders(cell_logo)
         set_cell_vertical_alignment(cell_logo, "center")
         p_logo = cell_logo.paragraphs[0]
@@ -179,9 +187,7 @@ def generate_docx(
         run_logo = p_logo.add_run()
         run_logo.add_picture(logo_path, width=Cm(3.5), height=Cm(2.5))
 
-        # Columna 2: Título (8.5cm)
-        cell_titulo = header_table.cell(0, 1)
-        cell_titulo.width = Cm(8.5)
+        # Configurar celda del Título + Subtítulo
         set_cell_borders(cell_titulo)
         set_cell_vertical_alignment(cell_titulo, "center")
         p_titulo = cell_titulo.paragraphs[0]
@@ -194,6 +200,7 @@ def generate_docx(
 
         p_subtitulo = cell_titulo.add_paragraph()
         p_subtitulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        set_paragraph_spacing(p_subtitulo, before=30, after=30)
         run_subtitulo = p_subtitulo.add_run("Desarrollo")
         run_subtitulo.font.size = Pt(11)
         run_subtitulo.font.name = "Calibri"
