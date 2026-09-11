@@ -159,6 +159,7 @@ def generate_docx(
 
         # Crear tabla principal de encabezado (4 filas x 4 columnas)
         header_table = header.add_table(rows=4, cols=4, width=Cm(18))
+        header_table.style = 'Table Grid'
         header_table.alignment = WD_TABLE_ALIGNMENT.CENTER
         header_table.allow_autofit = False
 
@@ -180,7 +181,6 @@ def generate_docx(
         # === APLICAR BORDES Y CONTENIDO DESPUÉS DE LAS FUSIONES ===
 
         # Configurar celda del Logo
-        set_cell_borders(cell_logo)
         set_cell_vertical_alignment(cell_logo, "center")
         p_logo = cell_logo.paragraphs[0]
         p_logo.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -188,7 +188,6 @@ def generate_docx(
         run_logo.add_picture(logo_path, width=Cm(3.5), height=Cm(2.5))
 
         # Configurar celda del Título + Subtítulo
-        set_cell_borders(cell_titulo)
         set_cell_vertical_alignment(cell_titulo, "center")
         p_titulo = cell_titulo.paragraphs[0]
         p_titulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -218,8 +217,6 @@ def generate_docx(
             cell_value = header_table.cell(i, 3)
 
             set_cell_shading(cell_label, "F2F2F2")
-            set_cell_borders(cell_label)
-            set_cell_borders(cell_value)
 
             agregar_celda_contenido(cell_label, label, bold=True, align=WD_ALIGN_PARAGRAPH.CENTER, font_size=9)
             agregar_celda_contenido(cell_value, value, align=WD_ALIGN_PARAGRAPH.CENTER, font_size=9)
