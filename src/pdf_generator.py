@@ -223,45 +223,43 @@ def dibujar_encabezado(canvas, doc):
         styles["BodyText"]
     )
 
-    # TABLA DERECHA
-    tabla_info = Table(
-        [
-            ["Código", "PTI-DS-FR-84"],
-            ["Versión", "6"],
-            ["Implementación", "01/08/2025"],
-            ["Clasificación de\nla información", "Uso Interno"]
-        ],
-        colWidths=[3 * cm, 2.5 * cm],
-        rowHeights=[0.8 * cm, 0.8 * cm, 0.8 * cm, 0.8 * cm]
-        )
-
-    tabla_info.setStyle(
-        TableStyle([
-            ("GRID", (0, 0), (-1, -1), 1, colors.black),
-            ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("FONTSIZE", (0, 0), (-1, -1), 9),
-            ("BACKGROUND", (0, 0), (0, -1), colors.HexColor("#F2F2F2"))
-        ])
-    )
-
-    # TABLA PRINCIPAL
+    # TABLA PRINCIPAL (4 filas x 4 columnas)
     encabezado = Table(
         [
-            [logo, titulo, tabla_info]
+            [logo, titulo, "Código", "PTI-DS-FR-84"],
+            ["", "", "Versión", "6"],
+            ["", "", "Implementación", "01/08/2025"],
+            ["", "", "Clasificación de\nla información", "Uso Interno"]
         ],
-        colWidths=[4 * cm, 8.5 * cm, 5.5 * cm]
+        colWidths=[4 * cm, 8.5 * cm, 2.5 * cm, 3 * cm],
+        rowHeights=[0.8 * cm, 0.8 * cm, 0.8 * cm, 0.8 * cm]
     )
 
     encabezado.setStyle(
         TableStyle([
+            # Fusionar celdas del logo (columna 0, filas 0-3)
+            ("SPAN", (0, 0), (0, 3)),
+            # Fusionar celdas del título (columna 1, filas 0-3)
+            ("SPAN", (1, 0), (1, 3)),
+
+            # Bordes de la tabla
             ("GRID", (0, 0), (-1, -1), 1, colors.black),
+
+            # Alineación
             ("ALIGN", (0, 0), (-1, -1), "CENTER"),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+
+            # Padding
             ("LEFTPADDING", (0, 0), (-1, -1), 5),
             ("RIGHTPADDING", (0, 0), (-1, -1), 5),
             ("TOPPADDING", (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 5)
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+
+            # Fondo gris para etiquetas de metadata (columna 2)
+            ("BACKGROUND", (2, 0), (2, 3), colors.HexColor("#F2F2F2")),
+
+            # Tamaño de fuente para metadata
+            ("FONTSIZE", (2, 0), (3, 3), 9)
         ])
     )
 
