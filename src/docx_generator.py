@@ -169,8 +169,9 @@ def generate_docx(
             row.cells[2].width = Cm(2.5)
             row.cells[3].width = Cm(3)
 
-        # Columna 1: Logo (4cm) - fusionar filas 0-3
-        cell_logo = header_table.cell(0, 0).merge(header_table.cell(3, 0))
+        # Columna 1: Logo (4cm)
+        cell_logo = header_table.cell(0, 0)
+        cell_logo.width = Cm(4)
         set_cell_borders(cell_logo)
         set_cell_vertical_alignment(cell_logo, "center")
         p_logo = cell_logo.paragraphs[0]
@@ -178,8 +179,9 @@ def generate_docx(
         run_logo = p_logo.add_run()
         run_logo.add_picture(logo_path, width=Cm(3.5), height=Cm(2.5))
 
-        # Columna 2: Título (8.5cm) - fusionar filas 0-1
-        cell_titulo = header_table.cell(0, 1).merge(header_table.cell(1, 1))
+        # Columna 2: Título (8.5cm)
+        cell_titulo = header_table.cell(0, 1)
+        cell_titulo.width = Cm(8.5)
         set_cell_borders(cell_titulo)
         set_cell_vertical_alignment(cell_titulo, "center")
         p_titulo = cell_titulo.paragraphs[0]
@@ -190,11 +192,7 @@ def generate_docx(
         run_titulo.font.size = Pt(14)
         run_titulo.font.name = "Calibri"
 
-        # Columna 2: Subtítulo (8.5cm) - fusionar filas 2-3
-        cell_subtitulo = header_table.cell(2, 1).merge(header_table.cell(3, 1))
-        set_cell_borders(cell_subtitulo)
-        set_cell_vertical_alignment(cell_subtitulo, "center")
-        p_subtitulo = cell_subtitulo.paragraphs[0]
+        p_subtitulo = cell_titulo.add_paragraph()
         p_subtitulo.alignment = WD_ALIGN_PARAGRAPH.CENTER
         run_subtitulo = p_subtitulo.add_run("Desarrollo")
         run_subtitulo.font.size = Pt(11)
