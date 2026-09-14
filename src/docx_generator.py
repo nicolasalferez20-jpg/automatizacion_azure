@@ -63,6 +63,17 @@ def set_paragraph_spacing(paragraph, before=0, after=0):
     pPr.append(spacing)
 
 
+def set_table_width(table, width_cm):
+    tbl = table._tbl
+    tblPr = tbl.tblPr
+    tblW = tblPr.find(qn('w:tblW'))
+    if tblW is None:
+        tblW = OxmlElement('w:tblW')
+        tblPr.append(tblW)
+    tblW.set(qn('w:w'), str(int(width_cm * 567)))
+    tblW.set(qn('w:type'), 'dxa')
+
+
 def agregar_celda_contenido(cell, texto, bold=False, align=WD_ALIGN_PARAGRAPH.LEFT, font_size=10):
     cell.text = ""
     p = cell.paragraphs[0]
@@ -239,6 +250,7 @@ def generate_docx(
 
     table_fecha = doc.add_table(rows=2, cols=4)
     table_fecha.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table_fecha, 18)
 
     # Establecer anchos de columna: 2cm, 2cm, 3cm, 11cm
     for row in table_fecha.rows:
@@ -315,6 +327,7 @@ def generate_docx(
 
     table12 = doc.add_table(rows=2, cols=2)
     table12.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table12, 18)
 
     # Establecer anchos de columna: 13cm, 5cm
     for row in table12.rows:
@@ -350,6 +363,10 @@ def generate_docx(
 
     table3 = doc.add_table(rows=1, cols=1)
     table3.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table3, 18)
+
+    for row in table3.rows:
+        row.cells[0].width = Cm(18)
 
     cell3 = table3.cell(0, 0)
     agregar_celda_html(cell3, descripcion, font_size=10)
@@ -366,6 +383,7 @@ def generate_docx(
     # ==================================================
     table45 = doc.add_table(rows=2, cols=2)
     table45.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table45, 18)
 
     # Establecer anchos de columna: 9cm, 9cm
     for row in table45.rows:
@@ -405,6 +423,7 @@ def generate_docx(
 
     table67 = doc.add_table(rows=2, cols=2)
     table67.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table67, 18)
 
     # Establecer anchos de columna: 9cm, 9cm
     for row in table67.rows:
@@ -449,6 +468,7 @@ def generate_docx(
 
     table89 = doc.add_table(rows=2, cols=2)
     table89.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table89, 18)
 
     # Establecer anchos de columna: 9cm, 9cm
     for row in table89.rows:
@@ -482,6 +502,10 @@ def generate_docx(
 
     table10 = doc.add_table(rows=2, cols=1)
     table10.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table10, 18)
+
+    for row in table10.rows:
+        row.cells[0].width = Cm(18)
 
     cell_10_label = table10.cell(0, 0)
     agregar_celda_contenido(cell_10_label, "10. Nombre Historia de Usuario", bold=True, align=WD_ALIGN_PARAGRAPH.CENTER)
@@ -508,6 +532,10 @@ def generate_docx(
 
     table11 = doc.add_table(rows=1, cols=1)
     table11.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table11, 18)
+
+    for row in table11.rows:
+        row.cells[0].width = Cm(18)
 
     cell11 = table11.cell(0, 0)
     cell11.text = ""
@@ -579,6 +607,10 @@ def generate_docx(
 
     table12_fuera = doc.add_table(rows=1, cols=1)
     table12_fuera.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table12_fuera, 18)
+
+    for row in table12_fuera.rows:
+        row.cells[0].width = Cm(18)
 
     cell12f = table12_fuera.cell(0, 0)
     cell12f.text = ""
@@ -620,6 +652,10 @@ def generate_docx(
 
     table13 = doc.add_table(rows=1, cols=1)
     table13.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table13, 18)
+
+    for row in table13.rows:
+        row.cells[0].width = Cm(18)
 
     cell13 = table13.cell(0, 0)
     cell13.text = ""
@@ -656,6 +692,7 @@ def generate_docx(
 
     table14 = doc.add_table(rows=5, cols=2)
     table14.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table14, 18)
 
     # Establecer anchos de columna: 7cm, 11cm
     for row in table14.rows:
@@ -712,6 +749,10 @@ def generate_docx(
 
     table15 = doc.add_table(rows=1, cols=1)
     table15.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table15, 18)
+
+    for row in table15.rows:
+        row.cells[0].width = Cm(18)
 
     cell15 = table15.cell(0, 0)
     cell15.text = ""
@@ -768,6 +809,10 @@ def generate_docx(
 
     table16 = doc.add_table(rows=1, cols=1)
     table16.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table16, 18)
+
+    for row in table16.rows:
+        row.cells[0].width = Cm(18)
 
     cell16 = table16.cell(0, 0)
     cell16.text = ""
@@ -799,6 +844,10 @@ def generate_docx(
 
     table17 = doc.add_table(rows=1, cols=1)
     table17.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table17, 18)
+
+    for row in table17.rows:
+        row.cells[0].width = Cm(18)
 
     cell17 = table17.cell(0, 0)
     agregar_celda_contenido(cell17, "N/A", align=WD_ALIGN_PARAGRAPH.LEFT)
@@ -825,6 +874,14 @@ def generate_docx(
 
     table_elaborado = doc.add_table(rows=2, cols=4)
     table_elaborado.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table_elaborado, 18)
+
+    # Establecer anchos de columna: 4.5cm cada una
+    for row in table_elaborado.rows:
+        row.cells[0].width = Cm(4.5)
+        row.cells[1].width = Cm(4.5)
+        row.cells[2].width = Cm(4.5)
+        row.cells[3].width = Cm(4.5)
 
     headers_elaborado = ["Elaborado por", "Fecha", "Creación/Modificación", "Versión"]
     for i, header in enumerate(headers_elaborado):
@@ -850,6 +907,15 @@ def generate_docx(
 
     table_aprobado = doc.add_table(rows=4, cols=5)
     table_aprobado.alignment = WD_TABLE_ALIGNMENT.CENTER
+    set_table_width(table_aprobado, 18)
+
+    # Establecer anchos de columna: 3.6cm cada una
+    for row in table_aprobado.rows:
+        row.cells[0].width = Cm(3.6)
+        row.cells[1].width = Cm(3.6)
+        row.cells[2].width = Cm(3.6)
+        row.cells[3].width = Cm(3.6)
+        row.cells[4].width = Cm(3.6)
 
     headers_aprobado = ["Nombre", "Cargo", "Área/Empresa", "Firma", "Fecha"]
     for i, header in enumerate(headers_aprobado):
